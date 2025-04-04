@@ -82,8 +82,8 @@ namespace NETtime.WinCE
             // GCHandle.ToIntPtr() does not exit in v3.5
             Console.WriteLine("TLS 1.2 client method create");
             IntPtr method = wolfssl.useTLSv1_2_client();
-            Console.WriteLine("CTX New");
-            IntPtr ctx = wolfssl.CTX_new((IntPtr)method);
+            Console.WriteLine("CTX New method=" + string.Format("{0:X8}", method));
+            IntPtr ctx = wolfssl.CTX_new(method);
             if (ctx == IntPtr.Zero)
             {
                 Console.WriteLine("Error in creating ctx structure");
@@ -131,8 +131,7 @@ namespace NETtime.WinCE
                 wolfssl.CTX_free(ctx);
             }
             IntPtr ssl = wolfssl.new_ssl(ctx);
-            string socketData = SerializeSocket(tcp);
-            wolfssl.set_fd_new(ssl, socketData);
+            wolfssl.set_fd(ssl, tcp);
             //if (wolfssl.set_fd(ssl, tcp) != wolfssl.SUCCESS)
             //{
             //    /* get and print out the error */
@@ -155,14 +154,6 @@ namespace NETtime.WinCE
             Console.WriteLine("SSL version is " + wolfssl.get_version(ssl));
 
 
-        }
-        public static string SerializeSocket(Socket socket)
-        {
-            IPEndPoint endPoint = (IPEndPoint)socket.RemoteEndPoint;
-
-
-            // Convert to a string format: "IP:Port"
-            return String.Format("{0}:{1}", endPoint.Address, endPoint.Port);
         }
 
         //public static void ConnectToServerWithoutCert()
