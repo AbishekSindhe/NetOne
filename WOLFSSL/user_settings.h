@@ -145,12 +145,7 @@
     #endif
 #endif
 
-/* Debug logging;
- * DLL_DEBUG is a preprocessor for the "DLL Debug" build config  */
-#if defined(DLL_DEBUG) || defined(Debug) || defined(DEBUG)
-    #define DEBUG_WOLFSSL
-#else
-    /* #define NO_ERROR_STRINGS */
-#endif
+#define DEBUG_WOLFSSL
+#define WOLFSSL_DEBUG_ERRORS_ONLY
 
 #endif /* !_WIN_CSHARP_USER_SETTINGS_H_ */

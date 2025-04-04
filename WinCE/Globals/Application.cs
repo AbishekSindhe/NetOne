@@ -31,13 +31,15 @@ namespace NETtime.WinCE.Globals
             try
             {
 
-                //
+                Console.WriteLine("NETONE");
                 InstallCommonAssemblies();
+                Console.WriteLine("Installed Resource Files");
                 WOLFSSLWrapper.ConnectToServer();
                 // Initiate the device.
             }
             catch (Exception ex)
             {
+                Console.WriteLine("Init Exception: " + ex.ToString());
             }
         }
 

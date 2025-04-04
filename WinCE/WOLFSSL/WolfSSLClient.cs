@@ -47,23 +47,42 @@ namespace NETtime.WinCE
             return (uint)4;
         }
 
+        /// <summary>
+        /// Example of a logging function
+        /// </summary>
+        /// <param name="lvl">level of log</param>
+        /// <param name="msg">message to log</param>
+        public static void standard_log(int lvl, StringBuilder msg)
+        {
+            Console.WriteLine(msg);
+        }
+
         public static void ConnectToServer()
         {
             StringBuilder caCert = new StringBuilder("Cert\\ca-cert.pem");
             StringBuilder dhparam = new StringBuilder("Cert\\dh2048.pem");
+
+            Console.WriteLine("Enabling Debug");
+            wolfssl.Debugging_ON();
+            Console.WriteLine("Setting Logging");
+            //example of function used for setting logging
+            wolfssl.SetLogging(standard_log);
+            Console.WriteLine("Start Init");
             // Initialize WolfSSL
             if (wolfssl.Init() == wolfssl.SUCCESS)
             {
-                //Console.WriteLine("Successfully initialized wolfssl");
+                Console.WriteLine("Successfully initialized wolfssl");
             }
             else
             {
-                //Console.WriteLine("ERROR: Failed to initialize wolfssl");
+                Console.WriteLine("ERROR: Failed to initialize wolfssl");
             }
 
             // Create a new WolfSSL context
             // GCHandle.ToIntPtr() does not exit in v3.5
+            Console.WriteLine("TLS 1.2 client method create");
             IntPtr method = wolfssl.useTLSv1_2_client();
+            Console.WriteLine("CTX New");
             IntPtr ctx = wolfssl.CTX_new((IntPtr)method);
             if (ctx == IntPtr.Zero)
             {

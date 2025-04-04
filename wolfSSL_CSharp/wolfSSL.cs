@@ -1671,7 +1671,9 @@ namespace wolfSSL.CSharp {
         {
             try
             {
-                return wolfTLSv1_2_client_method();
+                IntPtr method = wolfTLSv1_2_client_method();
+                Console.WriteLine("useTLSv1_2_client" + method.ToString());
+                return method;
             }
             catch (Exception e)
             {
