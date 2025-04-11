@@ -45,11 +45,9 @@ namespace NETtime.WinCE.Globals
 
         private static void InstallCommonAssemblies()
         {
-            Utility.ExtractDependencyFile("NETtime.WinCE.Resources.Cert.dh2048.pem", Utility.LocalPath + "\\Cert", "dh2048.pem", true, false);
             Utility.ExtractDependencyFile("NETtime.WinCE.Resources.Cert.ca-cert.pem", Utility.LocalPath + "\\Cert", "ca-cert.pem", true, false);
             Utility.ExtractDependencyFile("NETtime.WinCE.Resources.wolfssl.dll", Utility.LocalPath, "wolfssl.dll", true, false);
-            Utility.ExtractDependencyFile("NETtime.WinCE.Resources.wolfssl.exp", Utility.LocalPath, "wolfssl.exp", true, false);
-            Utility.ExtractDependencyFile("NETtime.WinCE.Resources.wolfssl.lib", Utility.LocalPath, "wolfssl.lib", true, false);
+            Utility.ExtractDependencyFile("NETtime.WinCE.Resources.wolfSSLWrapper.dll", Utility.LocalPath, "wolfSSLWrapper.dll", true, false);
         }
     }
 }

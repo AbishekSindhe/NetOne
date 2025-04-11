@@ -73,6 +73,18 @@ namespace wolfSSL.CSharp
         private const int WC_WAIT = 6000000;
 
 #if COMPACT_FRAMEWORK
+    // Convert unicode string to ASCII
+    public static string UnicodeToAscii(StringBuilder msg)
+    {
+        // Convert Unicode to Bytes
+        byte[] bytes = Encoding.Unicode.GetBytes((string)msg.ToString());
+        // Convert to ASCII
+        string ascii = Encoding.ASCII.GetString(bytes, 0, bytes.Length);
+        // TODO: adjust length based on location of NULL terminator
+        return ascii;
+    }
+
+    // WinCE version of Marshall for Unicode or Multi-byte pointer to ACII string
     public static string PtrToStringAnsiCE(IntPtr ptr)
     {
         if (ptr == IntPtr.Zero) return null;
@@ -88,31 +100,6 @@ namespace wolfSSL.CSharp
 
         return Encoding.ASCII.GetString(buffer, 0, len);
     }
-
-    public static class ContextManager
-    {
-        public static Dictionary<IntPtr, ctx_handle> ctxMap = new Dictionary<IntPtr, ctx_handle>();
-        public static Dictionary<IntPtr, ssl_handle> sslMap = new Dictionary<IntPtr, ssl_handle>();
-
-        public static void RegisterContext(IntPtr ctx, ctx_handle handle)
-        {
-            if (!ctxMap.ContainsKey(ctx))
-            {
-                ctxMap[ctx] = handle;
-            }
-        }
-
-        public static ctx_handle GetContext(IntPtr ctx)
-        {
-            ctx_handle handles;
-            if (!ctxMap.TryGetValue(ctx, out handles))
-            {
-                throw new Exception("Invalid context pointer.");
-            }
-            return handles;
-        }
-    }
-
 #endif
 
         /* GetConfigValue helper since App.config not implemented on all versions of Visual Studio.
@@ -2479,7 +2466,7 @@ namespace wolfSSL.CSharp
                 ssl_cipher = wolfSSL_get_current_cipher(sslCtx);
                 ssl_cipher_ptr = wolfSSL_CIPHER_get_name(ssl_cipher);
 #if COMPACT_FRAMEWORK
-                ssl_cipher_str = PtrToStringAnsiCE(ssl_cipher_ptr);
+                ssl_cipher_str = wolfssl.PtrToStringAnsiCE(ssl_cipher_ptr);
 #else
                 ssl_cipher_str = Marshal.PtrToStringAnsi(ssl_cipher_ptr);
 #endif
@@ -2572,7 +2559,7 @@ namespace wolfSSL.CSharp
 
                 version_ptr = wolfSSL_get_version(sslCtx);
 #if COMPACT_FRAMEWORK
-                version = PtrToStringAnsiCE(version_ptr);
+                version = wolfssl.PtrToStringAnsiCE(version_ptr);
 #else
                 version = Marshal.PtrToStringAnsi(version_ptr);
 #endif

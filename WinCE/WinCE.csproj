@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.21022</ProductVersion>
+    <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{0A61DFC8-702E-4AD2-839F-4F84A7DE2EBC}</ProjectGuid>
     <OutputType>Exe</OutputType>
@@ -111,16 +111,16 @@
     <None Include="ClassDiagram2.cd" />
     <None Include="ClassDiagram3.cd" />
     <EmbeddedResource Include="Resources\Cert\ca-cert.pem" />
-    <EmbeddedResource Include="Resources\Cert\dh2048.pem" />
     <EmbeddedResource Include="Resources\wolfssl.dll" />
-    <EmbeddedResource Include="Resources\wolfssl.lib" />
-    <EmbeddedResource Include="Resources\wolfssl.exp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\wolfSSLWrapper\wolfSSLWrapper.csproj">
       <Project>{A43B9FC7-43D0-45BB-AD8C-492B10A56A4E}</Project>
       <Name>wolfSSLWrapper</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\wolfSSLWrapper.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
   <ProjectExtensions>

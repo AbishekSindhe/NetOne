@@ -29,24 +29,6 @@ namespace NETtime.WinCE
             wolfssl.Cleanup();
         }
 
-        public static uint my_psk_client_cb(IntPtr ssl, string hint, IntPtr identity, uint id_max, IntPtr key, uint max_key)
-        {
-            /* C# client */
-            byte[] id = { 67, 35, 32, 99, 108, 105, 101, 110, 116 };
-            if (id_max < 9)
-                return 0;
-            Marshal.Copy(id, 0, identity, 9);
-
-            /* Use desired key, note must be a key smaller than max key size parameter
-                Replace this with desired key. Is trivial one for testing */
-            if (max_key < 4)
-                return 0;
-            byte[] tmp = { 26, 43, 60, 77 };
-            Marshal.Copy(tmp, 0, key, 4);
-
-            return (uint)4;
-        }
-
         /// <summary>
         /// Example of a logging function
         /// </summary>
@@ -54,210 +36,123 @@ namespace NETtime.WinCE
         /// <param name="msg">message to log</param>
         public static void standard_log(int lvl, StringBuilder msg)
         {
-            // Convert Unicode to Bytes
-            byte[] bytes = Encoding.Unicode.GetBytes((string)msg.ToString());
-            // Convert to ASCII
-            string ascii = Encoding.ASCII.GetString(bytes, 0, bytes.Length);
-            // adjust length based on location of NULL terminator
-            Console.WriteLine(ascii);
+            Console.WriteLine(wolfssl.UnicodeToAscii(msg));
         }
 
         public static void ConnectToServer()
         {
-            StringBuilder caCert = new StringBuilder("\\FlashDisk\\netone\\Cert\\ca-cert.pem");
-            StringBuilder dhparam = new StringBuilder("\\FlashDisk\\netone\\Cert\\dh2048.pem");
+            StringBuilder caCert = new StringBuilder(Utility.LocalPath + "\\Cert\\ca-cert.pem");
+            IntPtr ssl = IntPtr.Zero;
+            IntPtr ctx = IntPtr.Zero;
+
+            // Tested successfully using:
+            // ./examples/client/client -h stratus-clock-n2a.cloud.paychex.com -p 443 -A ca-cert.pem -x -g
+            string host = "stratus-clock-n2a.cloud.paychex.com";
+            int port = 443;
 
             Console.WriteLine("Enabling Debug");
             wolfssl.Debugging_ON();
+
+            // example of function used for setting logging
             Console.WriteLine("Setting Logging");
-            //example of function used for setting logging
             wolfssl.SetLogging(standard_log);
-            Console.WriteLine("Start Init");
+
             // Initialize WolfSSL
-            if (wolfssl.Init() == wolfssl.SUCCESS)
-            {
+            Console.WriteLine("Start Init");
+            if (wolfssl.Init() == wolfssl.SUCCESS) {
                 Console.WriteLine("Successfully initialized wolfssl");
             }
-            else
-            {
+            else {
                 Console.WriteLine("ERROR: Failed to initialize wolfssl");
+                return;
             }
 
-            // Create a new WolfSSL context
-            // GCHandle.ToIntPtr() does not exit in v3.5
-            Console.WriteLine("TLS 1.2 client method create");
-            IntPtr method = wolfssl.useTLSv1_2_client();
-            Console.WriteLine("CTX New method=" + string.Format("{0:X8}", method));
-            IntPtr ctx = wolfssl.CTX_new(method);
-            if (ctx == IntPtr.Zero)
-            {
-                Console.WriteLine("Error in creating ctx structure");
-
-            }
-            Console.WriteLine("Finished init of ctx .... now load in CA");
-
-            if (!File.Exists(caCert.ToString()))
-            {
-                Console.WriteLine("Could not find CA cert file ");
-                wolfssl.CTX_free(ctx);
-            }
-
-            if (!File.Exists(dhparam.ToString()))
-            {
-                Console.WriteLine("Could not find dh file");
-                //wolfssl.CTX_free(ctx);
-            }
-
-            if (wolfssl.CTX_load_verify_locations(ctx, null, caCert.ToString()) != wolfssl.SUCCESS)
-            {
-                Console.WriteLine("Error loading CA cert");
-                //wolfssl.CTX_free(ctx);
-            }
+            // show list of available TLS ciphers
             StringBuilder ciphers = new StringBuilder(new String(' ', 4096));
             wolfssl.get_ciphers(ciphers, 4096);
+            Console.WriteLine("Ciphers: " + wolfssl.UnicodeToAscii(ciphers));
 
-            short minDhKey = 128;
-            wolfssl.CTX_SetMinDhKey_Sz(ctx, minDhKey);
-            if (wolfssl.CTX_set_verify(ctx, wolfssl.SSL_VERIFY_NONE, myVerify) != wolfssl.SUCCESS)
+            // Create a new WolfSSL context
+            ctx = wolfssl.CTX_new(wolfssl.useTLSv1_2_client());
+            if (ctx == IntPtr.Zero) {
+                Console.WriteLine("Error in creating ctx structure");
+                return;
+            }
+
+            // Load trusted CA certificates
+            if (wolfssl.CTX_load_verify_locations(ctx, caCert.ToString(), null) != wolfssl.SUCCESS)
+            {
+                Console.WriteLine("Error loading CA cert");
+                clean(ssl, ctx);
+                return;
+            }
+
+            // Set peer certificate verification options
+            if (wolfssl.CTX_set_verify(ctx, wolfssl.SSL_VERIFY_PEER, myVerify) != wolfssl.SUCCESS)
             {
                 Console.WriteLine("Error setting verify callback!");
+                clean(ssl, ctx);
+                return;
             }
-            Socket tcp = new Socket(AddressFamily.InterNetwork, SocketType.Stream,
-                      ProtocolType.Tcp);
-            IPEndPoint endPoint = GetEndPoint("stratus-clock-n2a.cloud.paychex.com", 443);
 
+            // TCP Connect
+            Socket tcp = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            IPEndPoint endPoint = GetEndPoint(host, port);
+            Console.WriteLine("TCP Connecting to: " + host + ":" + port);
             try
             {
-                //tcp.Connect("localhost", 11111);
                 tcp.Connect(endPoint);
             }
             catch (Exception e)
             {
                 Console.WriteLine("tcp.Connect() error " + e.ToString());
-                wolfssl.CTX_free(ctx);
+                clean(IntPtr.Zero, ctx);
+                return;
             }
-            IntPtr ssl = wolfssl.new_ssl(ctx);
+            Console.WriteLine("TCP Connected");
+            ssl = wolfssl.new_ssl(ctx);
             wolfssl.set_fd(ssl, tcp);
-            //if (wolfssl.set_fd(ssl, tcp) != wolfssl.SUCCESS)
-            //{
-            //    /* get and print out the error */
-            //    Console.WriteLine(wolfssl.get_error(ssl));
-            //    //tcp.Close();
-            //    //clean(ssl, ctx);
-            //    //Environment.Exit(1);
-            //}
 
-            wolfssl.SetTmpDH_file(ssl, dhparam, wolfssl.SSL_FILETYPE_PEM);
+            // TLS Connect
             if (wolfssl.connect(ssl) != wolfssl.SUCCESS)
             {
                 /* get and print out the error */
-                Console.WriteLine(wolfssl.get_error(ssl));
-                //tcp.Close();
-                //clean(ssl, ctx);
-                //Environment.Exit(1);
+                Console.WriteLine("TLS Connect failed: " + wolfssl.get_error(ssl));
+                tcp.Close();
+                clean(ssl, ctx);
+                return;
+            }
+            Console.WriteLine("TLS Connected: version is " + wolfssl.get_version(ssl));
+            Console.WriteLine("TLS Cipher Suite is " + wolfssl.get_current_cipher(ssl));
+
+            // Send example HTTP GET
+            StringBuilder httpGetMsg = new StringBuilder("GET /index.html HTTP/1.0\r\n\r\n");
+            if (wolfssl.write(ssl, httpGetMsg, httpGetMsg.Length) != httpGetMsg.Length)
+            {
+                Console.WriteLine("Error in write");
+                tcp.Close();
+                clean(ssl, ctx);
+                return;
             }
 
-            Console.WriteLine("SSL version is " + wolfssl.get_version(ssl));
+            // read and print out the message then reply
+            StringBuilder buff = new StringBuilder(1024);
+            if (wolfssl.read(ssl, buff, buff.Length-1) < 0)
+            {
+                Console.WriteLine("Error in read");
+                tcp.Close();
+                clean(ssl, ctx);
+                return;
+            }
+            Console.WriteLine(buff);
 
+            // Send TLS shutdown to close connection gracefully
+            wolfssl.shutdown(ssl);
 
+            // Cleanups
+            tcp.Close();
+            clean(ssl, ctx);
         }
-
-        //public static void ConnectToServerWithoutCert()
-        //{
-        //    IntPtr ctx;
-        //    IntPtr ssl;
-        //    Socket tcp;
-        //    StringBuilder dhparam = new StringBuilder(Utility.LocalPath + "\\dh2048.pem");
-        //    wolfssl.psk_client_delegate psk_cb = new wolfssl.psk_client_delegate(my_psk_client_cb);
-        //    if (wolfssl.Init() == wolfssl.SUCCESS)
-        //    {
-        //        Console.WriteLine("Successfully initialized wolfssl");
-        //    }
-        //    else
-        //    {
-        //        Console.WriteLine("ERROR: Failed to initialize wolfssl");
-        //    }
-
-        //    ctx = wolfssl.CTX_new(wolfssl.useTLSv1_2_client());
-        //    if (ctx == IntPtr.Zero)
-        //    {
-        //        Console.WriteLine("Error creating ctx structure");
-        //    }
-
-        //    StringBuilder ciphers = new StringBuilder(new String(' ', 4096));
-        //    wolfssl.get_ciphers(ciphers, 4096);
-        //    Console.WriteLine("Ciphers : " + ciphers.ToString());
-
-        //    short minDhKey = 128;
-        //    wolfssl.CTX_SetMinDhKey_Sz(ctx, minDhKey);
-        //    Console.Write("Setting cipher suite to ");
-
-        //    /* In order to use static PSK build wolfSSL with the preprocessor flag WOLFSSL_STATIC_PSK */
-        //    StringBuilder set_cipher = new StringBuilder("DHE-PSK-AES128-CBC-SHA256");
-        //    Console.WriteLine(set_cipher);
-        //    if (wolfssl.CTX_set_cipher_list(ctx, set_cipher) != wolfssl.SUCCESS)
-        //    {
-        //        Console.WriteLine("Failed to set cipher suite");
-        //    }
-
-        //    /* Test psk use with DHE */
-        //    wolfssl.CTX_set_psk_client_callback(ctx, psk_cb);
-
-        //    /* set up TCP socket */
-        //    tcp = new Socket(AddressFamily.InterNetwork, SocketType.Stream,
-        //                          ProtocolType.Tcp);
-        //    IPEndPoint endPoint = GetEndPoint("stratus-clock-n2a.cloud.paychex.com", 443);
-        //    try
-        //    {
-        //        //tcp.Connect("localhost", 11111);
-        //        tcp.Connect(endPoint);
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        Console.WriteLine("tcp.Connect() error " + e.ToString());
-        //        wolfssl.CTX_free(ctx);
-        //    }
-
-        //    if (!tcp.Connected)
-        //    {
-        //        Console.WriteLine("tcp.Connect() failed!");
-        //        tcp.Close();
-        //        wolfssl.CTX_free(ctx);
-        //    }
-        //    ssl = wolfssl.new_ssl(ctx);
-        //    if (ssl == IntPtr.Zero)
-        //    {
-        //        Console.WriteLine("Error in creating ssl object");
-        //        wolfssl.CTX_free(ctx);
-        //    }
-
-        //    if (wolfssl.set_fd(ssl, tcp) != wolfssl.SUCCESS)
-        //    {
-        //        /* get and print out the error */
-        //        Console.WriteLine(wolfssl.get_error(ssl));
-        //        tcp.Close();
-        //        clean(ssl, ctx);
-        //    }
-
-        //    if (!File.Exists(dhparam.ToString()))
-        //    {
-        //        Console.WriteLine("Could not find dh file");
-        //        wolfssl.CTX_free(ctx);
-        //    }
-
-        //    wolfssl.SetTmpDH_file(ssl, dhparam, wolfssl.SSL_FILETYPE_PEM);
-
-        //    if (wolfssl.connect(ssl) != wolfssl.SUCCESS)
-        //    {
-        //        /* get and print out the error */
-        //        Console.WriteLine(wolfssl.get_error(ssl));
-        //        tcp.Close();
-        //        clean(ssl, ctx);
-        //    }
-
-        //    /* print out results of TLS/SSL accept */
-        //    Console.WriteLine("SSL version is " + wolfssl.get_version(ssl));
-        //}
 
         static IPEndPoint GetEndPoint(string hostname, int port)
         {

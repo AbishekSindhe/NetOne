@@ -12,19 +12,6 @@ namespace wolfSSL.CSharp
         private const string wolfssl_dll = "wolfssl.dll";
 
 #if COMPACT_FRAMEWORK
-        private static string PtrToStringAnsiCE(IntPtr ptr)
-        {
-            if (ptr == IntPtr.Zero) return string.Empty;
-
-            int length = 0;
-            while (Marshal.ReadByte(ptr, length) != 0) length++; // Find null terminator
-
-            byte[] buffer = new byte[length];
-            Marshal.Copy(ptr, buffer, 0, length);
-
-            return Encoding.UTF8.GetString(buffer, 0, buffer.Length); // Use UTF-8 decoding for X.509 fields
-        }
-
         [DllImport(wolfssl_dll)]
         private extern static int wolfSSL_X509_get_pubkey_buffer(IntPtr x509, IntPtr buf, IntPtr bufSz);
         [DllImport(wolfssl_dll)]
@@ -87,7 +74,7 @@ namespace wolfSSL.CSharp
 #if COMPACT_FRAMEWORK
             /* Only for Unicode: */
             this.Issuer = Marshal.PtrToStringUni(ret);
-            this.Issuer = PtrToStringAnsiCE(ret);
+            this.Issuer = wolfssl.PtrToStringAnsiCE(ret);
 #else
             this.Issuer = Marshal.PtrToStringAnsi(ret);
 #endif

@@ -145,7 +145,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(OutDir)\$(ProjectName).dll&quot; &quot;$(SolutionDir)\WinCE\Resources\&quot;&#x0D;&#x0A;copy &quot;$(OutDir)\$(ProjectName).lib&quot; &quot;$(SolutionDir)\WinCE\Resources\&quot;&#x0D;&#x0A;copy &quot;$(OutDir)\$(ProjectName).exp&quot; &quot;$(SolutionDir)\WinCE\Resources\&quot;"
+				CommandLine="copy &quot;$(OutDir)\$(ProjectName).dll&quot; &quot;$(SolutionDir)\WinCE\Resources\&quot;&#x0D;&#x0A;"
 			/>
 			<DeploymentTool
 				ForceDirty="-1"

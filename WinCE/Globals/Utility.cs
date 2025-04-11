@@ -112,6 +112,8 @@ namespace NETtime.WinCE.Globals
 
             using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(name))
             {
+                if (stream == null)
+                    return;
                 byte[] buffer = new byte[stream.Length];
                 stream.Read(buffer, 0, buffer.Length);
                 FileStream fs = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None);

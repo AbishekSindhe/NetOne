@@ -6,6 +6,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wolfssl", "WOLFSSL\WOLFSSL.vcproj", "{6E6F3282-9AAB-456B-A56E-C064D798E975}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "wolfSSLWrapper", "wolfSSLWrapper\wolfSSLWrapper.csproj", "{A43B9FC7-43D0-45BB-AD8C-492B10A56A4E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{6E6F3282-9AAB-456B-A56E-C064D798E975} = {6E6F3282-9AAB-456B-A56E-C064D798E975}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

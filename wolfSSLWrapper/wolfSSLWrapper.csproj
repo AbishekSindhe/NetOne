@@ -74,4 +74,7 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <PropertyGroup>
+    <PostBuildEvent>copy "$(ProjectDir)$(OutDir)$(ProjectName).dll" "$(SolutionDir)\WinCE\Resources\"</PostBuildEvent>
+  </PropertyGroup>
 </Project>
