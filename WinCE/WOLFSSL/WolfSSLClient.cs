@@ -55,12 +55,11 @@ namespace NETtime.WinCE
         public static void standard_log(int lvl, StringBuilder msg)
         {
             // Convert Unicode to Bytes
-            byte[] uni = Encoding.Unicode.GetBytes((string)msg.ToString());
-
+            byte[] bytes = Encoding.Unicode.GetBytes((string)msg.ToString());
             // Convert to ASCII
-            string Ascii = Encoding.ASCII.GetString(uni, 0, uni.Length);
-
-            Console.WriteLine(Ascii);
+            string ascii = Encoding.ASCII.GetString(bytes, 0, bytes.Length);
+            // adjust length based on location of NULL terminator
+            Console.WriteLine(ascii);
         }
 
         public static void ConnectToServer()
