@@ -29,6 +29,7 @@
 #define NO_WOLFSSL_DIR
 #define SIZEOF_LONG_LONG 8
 #define SIZEOF_LONG 4
+/* TODO: Remove this so we have proper mutex thread saftey */
 #define SINGLE_THREADED
 #define NO_MAIN_DRIVER
 #define BENCH_EMBEDDED
@@ -52,16 +53,17 @@
 #define HAVE_SECURE_RENEGOTIATION
 #define HAVE_SUPPORTED_CURVES
 #define HAVE_TLS_EXTENSIONS
+#define HAVE_ENCRYPT_THEN_MAC
+
 #define WOLFSSL_CERT_EXT
 #define WOLFSSL_CERT_REQ
 #define WOLFSSL_CERT_GEN
-#define HAVE_ENCRYPT_THEN_MAC
-#define HAVE_ECC_ENCRYPT
+//#define HAVE_ECC_ENCRYPT
 #define WOLFSSL_PUBLIC_MP
 #define NO_MULTIBYTE_PRINT
-#define WOLFSSL_KEY_GEN /* RSA key gen */
+//#define WOLFSSL_KEY_GEN /* RSA key gen */
 #define WOLFSSL_ASN_TEMPLATE /* default */
-#define WOLFSSL_SHA3
+//#define WOLFSSL_SHA3
 
 
 #if 0
@@ -108,8 +110,8 @@
 #define NO_DSA
 #define NO_RC4
 #define NO_MD4
-#define NO_MD5
-#define NO_SHA
+//#define NO_MD5
+//#define NO_SHA
 
 /* Math */
 
@@ -146,6 +148,6 @@
 #endif
 
 #define DEBUG_WOLFSSL
-#define WOLFSSL_DEBUG_ERRORS_ONLY
+#define NO_WOLFSSL_MSG_EX
 
 #endif /* !_WIN_CSHARP_USER_SETTINGS_H_ */

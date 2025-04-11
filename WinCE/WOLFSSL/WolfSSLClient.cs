@@ -54,13 +54,19 @@ namespace NETtime.WinCE
         /// <param name="msg">message to log</param>
         public static void standard_log(int lvl, StringBuilder msg)
         {
-            Console.WriteLine(msg);
+            // Convert Unicode to Bytes
+            byte[] uni = Encoding.Unicode.GetBytes((string)msg.ToString());
+
+            // Convert to ASCII
+            string Ascii = Encoding.ASCII.GetString(uni, 0, uni.Length);
+
+            Console.WriteLine(Ascii);
         }
 
         public static void ConnectToServer()
         {
-            StringBuilder caCert = new StringBuilder("Cert\\ca-cert.pem");
-            StringBuilder dhparam = new StringBuilder("Cert\\dh2048.pem");
+            StringBuilder caCert = new StringBuilder("\\FlashDisk\\netone\\Cert\\ca-cert.pem");
+            StringBuilder dhparam = new StringBuilder("\\FlashDisk\\netone\\Cert\\dh2048.pem");
 
             Console.WriteLine("Enabling Debug");
             wolfssl.Debugging_ON();
@@ -100,19 +106,20 @@ namespace NETtime.WinCE
             if (!File.Exists(dhparam.ToString()))
             {
                 Console.WriteLine("Could not find dh file");
-                wolfssl.CTX_free(ctx);
+                //wolfssl.CTX_free(ctx);
             }
 
             if (wolfssl.CTX_load_verify_locations(ctx, null, caCert.ToString()) != wolfssl.SUCCESS)
             {
                 Console.WriteLine("Error loading CA cert");
-                wolfssl.CTX_free(ctx);
+                //wolfssl.CTX_free(ctx);
             }
             StringBuilder ciphers = new StringBuilder(new String(' ', 4096));
             wolfssl.get_ciphers(ciphers, 4096);
+
             short minDhKey = 128;
             wolfssl.CTX_SetMinDhKey_Sz(ctx, minDhKey);
-            if (wolfssl.CTX_set_verify(ctx, wolfssl.SSL_VERIFY_PEER, myVerify) != wolfssl.SUCCESS)
+            if (wolfssl.CTX_set_verify(ctx, wolfssl.SSL_VERIFY_NONE, myVerify) != wolfssl.SUCCESS)
             {
                 Console.WriteLine("Error setting verify callback!");
             }

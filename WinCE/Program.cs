@@ -21,17 +21,8 @@ namespace NETtime.WinCE
             catch (Exception ex)
             {
                 Console.WriteLine("Main Exception: " + ex.ToString());
-                try
-                {
-                    System.Threading.Thread.Sleep(2000);
-                }
-                catch
-                {
-                }
-                finally
-                {
-                }
             }
+            System.Threading.Thread.Sleep(2000);
         }
 
         static void UnHanldedExceptionHandler(object obj, UnhandledExceptionEventArgs args)

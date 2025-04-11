@@ -81,10 +81,6 @@
     <Reference Include="System.Web.Services" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="wolfSSL_CSharp, Version=1.1.0.0, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\wolfSSL_CSharp\bin\x86\Debug\wolfSSL_CSharp.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Globals\TlsChecker.cs" />
@@ -119,6 +115,12 @@
     <EmbeddedResource Include="Resources\wolfssl.dll" />
     <EmbeddedResource Include="Resources\wolfssl.lib" />
     <EmbeddedResource Include="Resources\wolfssl.exp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\wolfSSLWrapper\wolfSSLWrapper.csproj">
+      <Project>{A43B9FC7-43D0-45BB-AD8C-492B10A56A4E}</Project>
+      <Name>wolfSSLWrapper</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
   <ProjectExtensions>
