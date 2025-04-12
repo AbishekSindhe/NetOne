@@ -68,8 +68,7 @@ namespace NETtime.WinCE
             }
 
             // show list of available TLS ciphers
-            string ciphers = new string(' ', 4096);
-            wolfssl.get_ciphers(ciphers, ciphers.Length);
+            string ciphers = wolfssl.get_ciphers();
             Console.WriteLine("Ciphers: " + ciphers);
 
             // Create a new WolfSSL context

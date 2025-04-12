@@ -2272,6 +2272,27 @@ namespace wolfSSL.CSharp
             }
         }
 
+        public static string get_ciphers()
+        {
+            try
+            {
+                string ciphers = new string(' ', 4096);
+                int ret = wolfSSL_get_ciphers(ciphers, ciphers.Length);
+                if (ret != SUCCESS)
+                    return null;
+
+        #if COMPACT_FRAMEWORK
+                return wolfssl.UnicodeToAscii(ciphers);
+        #else
+                return ciphers;
+        #endif
+            }
+            catch (Exception e)
+            {
+                log(ERROR_LOG, "wolfssl get_ciphers error " + e.ToString());
+                return null;
+            }
+        }
 
         /// <summary>
         /// Get available cipher suites
@@ -2283,13 +2304,7 @@ namespace wolfSSL.CSharp
         {
             try
             {
-        #if COMPACT_FRAMEWORK
-                int ret = wolfSSL_get_ciphers(list, sz);
-                list = wolfssl.UnicodeToAscii(list);
-                return ret;
-        #else
                 return wolfSSL_get_ciphers(list, sz);
-        #endif
             }
             catch (Exception e)
             {
