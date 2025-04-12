@@ -114,13 +114,13 @@
     <EmbeddedResource Include="Resources\wolfssl.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Resources\wolfSSLWrapper.dll" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\wolfSSLWrapper\wolfSSLWrapper.csproj">
       <Project>{A43B9FC7-43D0-45BB-AD8C-492B10A56A4E}</Project>
       <Name>wolfSSLWrapper</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Resources\wolfSSLWrapper.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
   <ProjectExtensions>

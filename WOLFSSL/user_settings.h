@@ -17,7 +17,7 @@
 #define NO_MULTIBYTE_PRINT
 #define NO_WOLFSSL_MSG_EX
 #define WOLFSSL_NO_ATOMICS
-
+//#define WOLFSSL_SMALL_STACK
 #define SIZEOF_LONG_LONG 8
 #define SIZEOF_LONG 4
 
@@ -59,7 +59,8 @@
 /* Math - sp_int.c */
 #define WOLFSSL_SP_MATH_ALL
 #define WOLFSSL_SP_SMALL
-#define SP_INT_BITS 2048 /* maximum key size */
+/* Need RSA 4096-bit for "USERTrust RSA Certification Authority" */
+#define SP_INT_BITS 4096 /* maximum key size */
 
 /* Timing Resitance */
 #define TFM_TIMING_RESISTANT

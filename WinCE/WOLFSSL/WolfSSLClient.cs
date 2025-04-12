@@ -34,7 +34,7 @@ namespace NETtime.WinCE
         /// </summary>
         /// <param name="lvl">level of log</param>
         /// <param name="msg">message to log</param>
-        public static void standard_log(int lvl, StringBuilder msg)
+        public static void standard_log(int lvl, string msg)
         {
             Console.WriteLine(wolfssl.UnicodeToAscii(msg));
         }
@@ -50,8 +50,8 @@ namespace NETtime.WinCE
             string host = "stratus-clock-n2a.cloud.paychex.com";
             int port = 443;
 
-            Console.WriteLine("Enabling Debug");
-            wolfssl.Debugging_ON();
+            //Console.WriteLine("Enabling Debug");
+            //wolfssl.Debugging_ON();
 
             // example of function used for setting logging
             Console.WriteLine("Setting Logging");
@@ -68,9 +68,9 @@ namespace NETtime.WinCE
             }
 
             // show list of available TLS ciphers
-            StringBuilder ciphers = new StringBuilder(new String(' ', 4096));
-            wolfssl.get_ciphers(ciphers, 4096);
-            Console.WriteLine("Ciphers: " + wolfssl.UnicodeToAscii(ciphers));
+            string ciphers = new string(' ', 4096);
+            wolfssl.get_ciphers(ciphers, ciphers.Length);
+            Console.WriteLine("Ciphers: " + ciphers);
 
             // Create a new WolfSSL context
             ctx = wolfssl.CTX_new(wolfssl.useTLSv1_2_client());
@@ -80,9 +80,10 @@ namespace NETtime.WinCE
             }
 
             // Load trusted CA certificates
-            if (wolfssl.CTX_load_verify_locations(ctx, caCert.ToString(), null) != wolfssl.SUCCESS)
+            int ret = wolfssl.CTX_load_verify_locations(ctx, caCert.ToString(), null);
+            if (ret != wolfssl.SUCCESS)
             {
-                Console.WriteLine("Error loading CA cert");
+                Console.WriteLine("Error loading CA cert: ret = " + ret);
                 clean(ssl, ctx);
                 return;
             }
@@ -127,6 +128,7 @@ namespace NETtime.WinCE
 
             // Send example HTTP GET
             StringBuilder httpGetMsg = new StringBuilder("GET /index.html HTTP/1.0\r\n\r\n");
+            Console.WriteLine("Write: " + httpGetMsg);
             if (wolfssl.write(ssl, httpGetMsg, httpGetMsg.Length) != httpGetMsg.Length)
             {
                 Console.WriteLine("Error in write");
@@ -137,14 +139,14 @@ namespace NETtime.WinCE
 
             // read and print out the message then reply
             StringBuilder buff = new StringBuilder(1024);
-            if (wolfssl.read(ssl, buff, buff.Length-1) < 0)
+            if (wolfssl.read(ssl, buff, 1023) < 0)
             {
                 Console.WriteLine("Error in read");
                 tcp.Close();
                 clean(ssl, ctx);
                 return;
             }
-            Console.WriteLine(buff);
+            Console.WriteLine("Read: " + buff);
 
             // Send TLS shutdown to close connection gracefully
             wolfssl.shutdown(ssl);

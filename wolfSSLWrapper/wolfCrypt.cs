@@ -18,8 +18,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1335, USA
  */
-#define COMPACT_FRAMEWORK
 
+/* .NET 3.5 Windows CE Compatibility */
+#define COMPACT_FRAMEWORK
 
 using System;
 using System.Runtime.InteropServices;
@@ -517,7 +518,7 @@ namespace wolfSSL.CSharp
         private extern static IntPtr wc_GetErrorString(int error);
 #endif
 
-        public delegate void loggingCb(int lvl, StringBuilder msg);
+        public delegate void loggingCb(int lvl, string msg);
         private static loggingCb internal_log;
 
         /// <summary>
@@ -530,8 +531,7 @@ namespace wolfSSL.CSharp
             /* if log is not set then print nothing */
             if (internal_log == null)
                 return;
-            StringBuilder ptr = new StringBuilder(msg);
-            internal_log(lvl, ptr);
+            internal_log(lvl, msg);
         }
 
 
