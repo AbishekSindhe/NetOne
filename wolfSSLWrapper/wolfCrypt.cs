@@ -511,12 +511,12 @@ namespace wolfSSL.CSharp
 #if WindowsCE
         [DllImport(wolfssl_dll)]
         private extern static IntPtr wc_GetErrorString(int error);
+        public delegate void loggingCb(int lvl, string msg);
 #else
         [DllImport(wolfssl_dll, CallingConvention = CallingConvention.Cdecl)]
         private extern static IntPtr wc_GetErrorString(int error);
+        public delegate void loggingCb(int lvl, StringBuilder msg);
 #endif
-
-        public delegate void loggingCb(int lvl, string msg);
         private static loggingCb internal_log;
 
         /// <summary>
@@ -524,6 +524,7 @@ namespace wolfSSL.CSharp
         /// </summary>
         /// <param name="lvl">Level of log message</param>
         /// <param name="msg">Message to log</param>
+#if WindowsCE
         private static void log(int lvl, string msg)
         {
             /* if log is not set then print nothing */
@@ -531,6 +532,16 @@ namespace wolfSSL.CSharp
                 return;
             internal_log(lvl, msg);
         }
+#else
+        private static void log(int lvl, string msg)
+        {
+            /* if log is not set then print nothing */
+            if (internal_log == null)
+                return;
+            StringBuilder ptr = new StringBuilder(msg);
+            internal_log(lvl, ptr);
+        }
+#endif
 
 
         /********************************
@@ -544,7 +555,7 @@ namespace wolfSSL.CSharp
         public static readonly int OTHER_LOG = 4;
         public static readonly int INVALID_DEVID = -2;
         public static readonly int ECC_MAX_SIG_SIZE = 141;    /* ECC max sig size */
-        public static readonly int  ECC_KEY_SIZE = 32;       /* ECC key size */
+        public static readonly int ECC_KEY_SIZE = 32;         /* ECC key size */
         public static readonly int MAX_ECIES_TEST_SZ = 200;   /* ECIES max sig size */
         public static readonly int ED25519_SIG_SIZE = 64;     /* ED25519 pub + priv  */
         public static readonly int ED25519_KEY_SIZE = 32;     /* Private key only */
@@ -2132,11 +2143,11 @@ namespace wolfSSL.CSharp
          **********************************************************************/
 
         /// <summary>
-    	/// Initialize an ED25519 key.
-    	/// </summary>
-    	/// <param name="key">Buffer to receive the initialized key</param>
-    	/// <returns>0 on success, otherwise an error code</returns>
-    	public static int Ed25519InitKey(out IntPtr key)
+        /// Initialize an ED25519 key.
+        /// </summary>
+        /// <param name="key">Buffer to receive the initialized key</param>
+        /// <returns>0 on success, otherwise an error code</returns>
+        public static int Ed25519InitKey(out IntPtr key)
         {
             key = IntPtr.Zero;
             try
@@ -2657,11 +2668,13 @@ namespace wolfSSL.CSharp
             return publicKey;
         }
 
+
         /// <summary>
         /// Export both private and public keys from a Curve25519 key structure
         /// </summary>
         /// <param name="key">Curve25519 key structure</param>
-        /// <returns>void, see `out` parameters containing the private key and public key as byte arrays</returns>
+        /// <param name="privateKey">returned raw private key as byte array</param>
+        /// <param name="publicKey">returned raw public key as byte array</param>
         public static void Curve25519ExportKeyRaw(IntPtr key, out byte[] privateKey, out byte[] publicKey)
         {
             privateKey = new byte[ED25519_KEY_SIZE];
@@ -2673,7 +2686,6 @@ namespace wolfSSL.CSharp
             {
                 throw new Exception("Failed to export Curve25519 keys. Error code: " + ret);
             }
-
             return;
         }
         /* END RAW Curve25519 */
