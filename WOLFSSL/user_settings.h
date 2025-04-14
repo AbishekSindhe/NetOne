@@ -24,9 +24,6 @@
 #define NO_MAIN_DRIVER
 #define BENCH_EMBEDDED
 
-/* For testing use test seed - NEEDS FIXED */
-#define WOLFSSL_GENSEED_FORTEST
-
 #define USE_WOLF_STRTOK
 #define XSNPRINTF StringCbPrintfA
 #include <string.h> /* for strcpy_s */
@@ -39,6 +36,8 @@
 #define HAVE_HASHDRBG
 #define WOLFSSL_BASE64_ENCODE
 #define WOLFSSL_PUBLIC_MP
+/* Only validate the peers leaf certificate to a trusted CA */
+#define WOLFSSL_ALT_CERT_CHAINS
 
 #if 0 /* optional RSA key generation */
     #define WOLFSSL_KEY_GEN
