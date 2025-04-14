@@ -19,9 +19,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1335, USA
  */
 
-/* .NET 3.5 Windows CE Compatibility */
-#define COMPACT_FRAMEWORK
-
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -33,7 +30,7 @@ namespace wolfSSL.CSharp
     {
         private const string wolfssl_dll = "wolfssl.dll";
 
-#if COMPACT_FRAMEWORK
+#if WindowsCE
         [DllImport(wolfssl_dll)]
         private extern static int wolfSSL_X509_get_pubkey_buffer(IntPtr x509, IntPtr buf, IntPtr bufSz);
         [DllImport(wolfssl_dll)]
@@ -93,23 +90,11 @@ namespace wolfSSL.CSharp
             this.x509 = x509;
             ret = wolfSSL_X509_get_name_oneline(
                 wolfSSL_X509_get_issuer_name(this.x509), IntPtr.Zero, 0);
-#if COMPACT_FRAMEWORK
-            /* Only for Unicode: */
-            this.Issuer = Marshal.PtrToStringUni(ret);
-            this.Issuer = wolfssl.PtrToStringAnsiCE(ret);
-#else
-            this.Issuer = Marshal.PtrToStringAnsi(ret);
-#endif
+            this.Issuer = wolfssl.PtrToStringAnsi(ret);
 
             ret = wolfSSL_X509_get_name_oneline(
                 wolfSSL_X509_get_subject_name(this.x509), IntPtr.Zero, 0);
-
-#if COMPACT_FRAMEWORK
-            /* Only for Unicode: */
-            this.Subject = Marshal.PtrToStringUni(ret);
-#else
-            this.Subject = Marshal.PtrToStringAnsi(ret);
-#endif
+            this.Subject = wolfssl.PtrToStringAnsi(ret);
 
             this.isDynamic = isDynamic;
         }

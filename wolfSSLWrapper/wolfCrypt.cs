@@ -19,11 +19,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1335, USA
  */
 
-/* .NET 3.5 Windows CE Compatibility */
-#define COMPACT_FRAMEWORK
-
 using System;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace wolfSSL.CSharp
@@ -35,7 +33,7 @@ namespace wolfSSL.CSharp
         /********************************
          * Init wolfSSL library
          */
-#if COMPACT_FRAMEWORK
+#if WindowsCE
         [DllImport(wolfssl_dll)]
         private extern static int wolfCrypt_Init();
         [DllImport(wolfssl_dll)]
@@ -51,7 +49,7 @@ namespace wolfSSL.CSharp
         /********************************
          * Random
          */
-#if COMPACT_FRAMEWORK
+#if WindowsCE
         [DllImport(wolfssl_dll)]
         private extern static IntPtr wc_rng_new(IntPtr nonce, UInt32 nonceSz, IntPtr heap);
         [DllImport(wolfssl_dll)]
@@ -71,7 +69,7 @@ namespace wolfSSL.CSharp
         /********************************
          * ECC
          */
-#if COMPACT_FRAMEWORK
+#if WindowsCE
         [DllImport(wolfssl_dll)]
         private extern static IntPtr wc_ecc_key_new(IntPtr heap);
         [DllImport(wolfssl_dll)]
@@ -123,7 +121,7 @@ namespace wolfSSL.CSharp
         /********************************
          * ECIES
          */
-#if COMPACT_FRAMEWORK
+#if WindowsCE
         [DllImport(wolfssl_dll)]
         private extern static IntPtr wc_ecc_ctx_new(int flags, IntPtr rng);
         [DllImport(wolfssl_dll)]
@@ -184,7 +182,7 @@ namespace wolfSSL.CSharp
         /********************************
          * ECDHE
          */
-#if COMPACT_FRAMEWORK
+#if WindowsCE
         [DllImport(wolfssl_dll)]
         private extern static int wc_ecc_shared_secret(IntPtr privateKey, IntPtr publicKey, byte[] outSharedSecret, ref int outlen);
 #else
@@ -196,7 +194,7 @@ namespace wolfSSL.CSharp
         /********************************
          * RSA
          */
-#if COMPACT_FRAMEWORK
+#if WindowsCE
         [DllImport(wolfssl_dll)]
         private static extern IntPtr wc_NewRsaKey(IntPtr heap, int devId, IntPtr result_code);
         [DllImport(wolfssl_dll)]
@@ -266,7 +264,7 @@ namespace wolfSSL.CSharp
         /********************************
          * ED25519
          */
-#if COMPACT_FRAMEWORK
+#if WindowsCE
         [DllImport(wolfssl_dll)]
         private static extern IntPtr wc_ed25519_new(IntPtr heap, int devId, IntPtr result_code);
         [DllImport(wolfssl_dll)]
@@ -350,7 +348,7 @@ namespace wolfSSL.CSharp
         /********************************
          * Curve25519
          */
-#if COMPACT_FRAMEWORK
+#if WindowsCE
         [DllImport(wolfssl_dll)]
         private static extern IntPtr wc_curve25519_new(IntPtr heap, int devId, IntPtr result_code);
         [DllImport(wolfssl_dll)]
@@ -434,7 +432,7 @@ namespace wolfSSL.CSharp
         /********************************
          * AES-GCM
          */
-#if COMPACT_FRAMEWORK
+#if WindowsCE
         [DllImport(wolfssl_dll)]
         private extern static IntPtr wc_AesNew(IntPtr heap, int devId, IntPtr result_code);
         [DllImport(wolfssl_dll)]
@@ -474,7 +472,7 @@ namespace wolfSSL.CSharp
         /********************************
          * HASH
          */
-#if COMPACT_FRAMEWORK
+#if WindowsCE
         [DllImport(wolfssl_dll)]
         private extern static IntPtr wc_HashNew(uint hashType, IntPtr heap, int devId, IntPtr result_code);
         [DllImport(wolfssl_dll)]
@@ -510,7 +508,7 @@ namespace wolfSSL.CSharp
         /********************************
         * Logging
         */
-#if COMPACT_FRAMEWORK
+#if WindowsCE
         [DllImport(wolfssl_dll)]
         private extern static IntPtr wc_GetErrorString(int error);
 #else
@@ -2848,6 +2846,11 @@ namespace wolfSSL.CSharp
 
             return ret;
         }
+        public static int AesGcmEncrypt(IntPtr aes, byte[] iv, byte[] plaintext,
+            byte[] ciphertext, byte[] authTag)
+        {
+            return AesGcmEncrypt(aes, iv, plaintext, ciphertext, null);
+        }
 
         /// <summary>
         /// Decrypt data using AES-GCM
@@ -2914,6 +2917,11 @@ namespace wolfSSL.CSharp
             }
 
             return ret;
+        }
+        public static int AesGcmDecrypt(IntPtr aes, byte[] iv, byte[] ciphertext,
+            byte[] plaintext, byte[] authTag)
+        {
+            return AesGcmDecrypt(aes, iv, ciphertext, plaintext, authTag, null);
         }
 
         /// <summary>
@@ -3173,11 +3181,7 @@ namespace wolfSSL.CSharp
             try
             {
                 IntPtr errStr = wc_GetErrorString(error);
-#if COMPACT_FRAMEWORK
-                return wolfssl.PtrToStringAnsiCE(errStr);
-#else
-                return Marshal.PtrToStringAnsi(errStr);
-#endif
+                return wolfssl.PtrToStringAnsi(errStr);
             }
             catch (Exception e)
             {
