@@ -20,18 +20,9 @@ namespace NETtime.WinCE
             }
             catch (Exception ex)
             {
-                try
-                {
-                    System.Threading.Thread.Sleep(2000);
-                    System.Threading.Thread.Sleep(2000);
-                }
-                catch
-                {
-                }
-                finally
-                {
-                }
+                Console.WriteLine("Main Exception: " + ex.ToString());
             }
+            System.Threading.Thread.Sleep(2000);
         }
 
         static void UnHanldedExceptionHandler(object obj, UnhandledExceptionEventArgs args)
@@ -41,6 +32,7 @@ namespace NETtime.WinCE
                 Exception ex = (args.ExceptionObject as Exception);
                 if (ex != null)
                 {
+                    Console.WriteLine("UnHanldedExceptionHandler: " + ex.ToString());
                     System.Threading.Thread.Sleep(2000);
                 }
             }
