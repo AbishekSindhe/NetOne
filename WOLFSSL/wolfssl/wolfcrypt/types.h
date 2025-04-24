@@ -252,7 +252,8 @@ decouple library dependencies with standard string, memory and so on.
          #endif
     #endif
 
-    #if (defined(_MSC_VER) && !defined(WOLFSSL_NOT_WINDOWS_API)) || \
+    #if (defined(_MSC_VER) && (_MSC_VER == 1200)) ||  /* MSVC6 */ \
+        (defined(_MSC_VER) && !defined(WOLFSSL_NOT_WINDOWS_API)) || \
            defined(__BCPLUSPLUS__) || \
            (defined(__WATCOMC__) && defined(__WATCOM_INT64__))
         /* windows types */
@@ -767,11 +768,13 @@ typedef struct w64wrapper {
         #endif
 
         #ifndef XSTRCASECMP
-        #if defined(MICROCHIP_PIC32) && (__XC32_VERSION >= 1000) && (__XC32_VERSION < 4000)
+        #if (defined(MICROCHIP_MPLAB_HARMONY) || defined(MICROCHIP_PIC32)) && \
+            (__XC32_VERSION >= 1000) && (__XC32_VERSION < 4000)
             /* XC32 supports str[n]casecmp in version >= 1.0 through 4.0. */
             #define XSTRCASECMP(s1,s2) strcasecmp((s1),(s2))
-        #elif defined(MICROCHIP_PIC32) || defined(WOLFSSL_TIRTOS) || \
-                defined(WOLFSSL_ZEPHYR) || defined(MICROCHIP_PIC24)
+        #elif defined(MICROCHIP_MPLAB_HARMONY) || defined(MICROCHIP_PIC32) || \
+              defined(WOLFSSL_TIRTOS) || defined(WOLFSSL_ZEPHYR) || \
+              defined(MICROCHIP_PIC24)
             /* XC32 version < 1.0 does not support strcasecmp. */
             #define USE_WOLF_STRCASECMP
         #elif defined(USE_WINDOWS_API) || defined(FREERTOS_TCP_WINSIM)
@@ -799,11 +802,13 @@ typedef struct w64wrapper {
         #endif /* !XSTRCASECMP */
 
         #ifndef XSTRNCASECMP
-        #if defined(MICROCHIP_PIC32) && (__XC32_VERSION >= 1000)
+        #if (defined(MICROCHIP_MPLAB_HARMONY) || defined(MICROCHIP_PIC32)) && \
+            (__XC32_VERSION >= 1000)
             /* XC32 supports str[n]casecmp in version >= 1.0. */
             #define XSTRNCASECMP(s1,s2,n) strncasecmp((s1),(s2),(n))
-        #elif defined(MICROCHIP_PIC32) || defined(WOLFSSL_TIRTOS) || \
-                defined(WOLFSSL_ZEPHYR) || defined(MICROCHIP_PIC24)
+        #elif defined(MICROCHIP_MPLAB_HARMONY) || defined(MICROCHIP_PIC32) || \
+              defined(WOLFSSL_TIRTOS) || defined(WOLFSSL_ZEPHYR) || \
+              defined(MICROCHIP_PIC24)
             /* XC32 version < 1.0 does not support strncasecmp. */
             #define USE_WOLF_STRNCASECMP
         #elif defined(USE_WINDOWS_API) || defined(FREERTOS_TCP_WINSIM)
@@ -1005,7 +1010,7 @@ typedef struct w64wrapper {
         #endif
         #if defined(OPENSSL_ALL) || defined(OPENSSL_EXTRA) || defined(OPENSSL_EXTRA_X509_SMALL)
         #define XISALNUM(c)     isalnum((c))
-        #ifdef NO_STDLIB_ISASCII
+        #if !defined(HAVE_ISASCII) || defined(NO_STDLIB_ISASCII)
             #define XISASCII(c) (((c) >= 0 && (c) <= 127) ? 1 : 0)
         #else
             #define XISASCII(c) isascii((c))
@@ -1813,8 +1818,8 @@ typedef struct w64wrapper {
         #define PRAGMA_DIAG_POP /* null expansion */
     #endif
 
-    #define WC_CPP_CAT_(a, b) a ## b
-    #define WC_CPP_CAT(a, b) WC_CPP_CAT_(a, b)
+    #define WC_CPP_CAT4_(a, b, c, d) a ## b ## c ## d
+    #define WC_CPP_CAT4(a, b, c, d) WC_CPP_CAT4_(a, b, c, d)
     #if defined(WC_NO_STATIC_ASSERT)
         #define wc_static_assert(expr) struct wc_static_assert_dummy_struct
         #define wc_static_assert2(expr, msg) wc_static_assert(expr)
@@ -1851,11 +1856,16 @@ typedef struct w64wrapper {
                 #define wc_static_assert2(expr, msg) _Static_assert(expr, msg)
             #endif
         #else
-            /* C89-compatible fallback */
-            #define wc_static_assert(expr)                                     \
-                struct WC_CPP_CAT(wc_static_assert_dummy_struct_L, __LINE__) { \
-                    char t[(expr) ? 1 : -1];                                   \
-                }
+            #ifdef __COUNTER__
+                #define wc_static_assert(expr)                          \
+                    struct WC_CPP_CAT4(wc_static_assert_dummy_struct_L, \
+                                       __LINE__, _, __COUNTER__) {      \
+                        char t[(expr) ? 1 : -1];                        \
+                    }
+            #else
+                #define wc_static_assert(expr) \
+                        struct wc_static_assert_dummy_struct
+            #endif
             #ifndef wc_static_assert2
                 #define wc_static_assert2(expr, msg) wc_static_assert(expr)
             #endif
@@ -1886,6 +1896,13 @@ typedef struct w64wrapper {
     #endif
     #ifndef RESTORE_VECTOR_REGISTERS
         #define RESTORE_VECTOR_REGISTERS() WC_DO_NOTHING
+    #endif
+
+    #ifndef WC_SANITIZE_DISABLE
+        #define WC_SANITIZE_DISABLE() WC_DO_NOTHING
+    #endif
+    #ifndef WC_SANITIZE_ENABLE
+        #define WC_SANITIZE_ENABLE() WC_DO_NOTHING
     #endif
 
     #if FIPS_VERSION_GE(5,1)

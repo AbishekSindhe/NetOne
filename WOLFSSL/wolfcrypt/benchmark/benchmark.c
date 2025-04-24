@@ -548,6 +548,7 @@
         #undef  printf
         #define printf XPRINTF
     #elif defined(NETOS)
+        int dc_log_printf(char* format, ...);
         #undef printf
         #define printf dc_log_printf
     #endif
@@ -781,8 +782,8 @@
 /* Define AES_AUTH_ADD_SZ already here, since it's used in the
  * static declaration of `bench_Usage_msg1`. */
 #if !defined(AES_AUTH_ADD_SZ) && \
-        defined(STM32_CRYPTO) && !defined(STM32_AESGCM_PARTIAL) || \
-        defined(WOLFSSL_XILINX_CRYPT_VERSAL)
+        (defined(STM32_CRYPTO) || \
+         defined(WOLFSSL_XILINX_CRYPT_VERSAL))
     /* For STM32 use multiple of 4 to leverage crypto hardware
      * Xilinx Versal requires to use multiples of 16 bytes */
     #define AES_AUTH_ADD_SZ 16
@@ -8637,7 +8638,7 @@ void bench_srtpkdf(void)
     bench_stats_start(&count, &start);
     PRIVATE_KEY_UNLOCK();
     do {
-        for (i = 0; i < numBlocks; i++) {
+        for (i = 0; i < numBlocks * 1000; i++) {
             ret = wc_SRTP_KDF(key, AES_128_KEY_SIZE, salt, sizeof(salt),
                 kdrIdx, index, keyE, AES_128_KEY_SIZE, keyA, sizeof(keyA),
                 keyS, sizeof(keyS));
@@ -8660,7 +8661,7 @@ void bench_srtpkdf(void)
     bench_stats_start(&count, &start);
     PRIVATE_KEY_UNLOCK();
     do {
-        for (i = 0; i < numBlocks; i++) {
+        for (i = 0; i < numBlocks * 1000; i++) {
             ret = wc_SRTP_KDF(key, AES_256_KEY_SIZE, salt, sizeof(salt),
                 kdrIdx, index, keyE, AES_256_KEY_SIZE, keyA, sizeof(keyA),
                 keyS, sizeof(keyS));
@@ -8683,7 +8684,7 @@ void bench_srtpkdf(void)
     bench_stats_start(&count, &start);
     PRIVATE_KEY_UNLOCK();
     do {
-        for (i = 0; i < numBlocks; i++) {
+        for (i = 0; i < numBlocks * 1000; i++) {
             ret = wc_SRTCP_KDF(key, AES_128_KEY_SIZE, salt, sizeof(salt),
                 kdrIdx, index, keyE, AES_128_KEY_SIZE, keyA, sizeof(keyA),
                 keyS, sizeof(keyS));
@@ -8706,7 +8707,7 @@ void bench_srtpkdf(void)
     bench_stats_start(&count, &start);
     PRIVATE_KEY_UNLOCK();
     do {
-        for (i = 0; i < numBlocks; i++) {
+        for (i = 0; i < numBlocks * 1000; i++) {
             ret = wc_SRTCP_KDF(key, AES_256_KEY_SIZE, salt, sizeof(salt),
                 kdrIdx, index, keyE, AES_256_KEY_SIZE, keyA, sizeof(keyA),
                 keyS, sizeof(keyS));

@@ -31,11 +31,12 @@
     #include <wolfssl/wolfcrypt/wolfevent.h>
 #endif
 
+
 #ifdef _WIN32
     #ifdef SSL_SNIFFER_EXPORTS
         #define SSL_SNIFFER_API __declspec(dllexport)
     #else
-        #define SSL_SNIFFER_API
+        #define SSL_SNIFFER_API __declspec(dllimport)
     #endif
 #else
     #define SSL_SNIFFER_API

@@ -28,6 +28,8 @@
  * WC_USE_DEVID=0x1234
  */
 
+#define WOLFSSL_VIS_FOR_TESTS
+
 #ifdef HAVE_CONFIG_H
     #include <config.h>
 #endif
@@ -41,7 +43,7 @@
     #define WOLFSSL_DEBUG_TRACE_ERROR_CODES_ALWAYS
 #endif
 
-#ifndef NO_CRYPT_TEST
+#if !defined(NO_CRYPT_TEST) || defined(WC_TEST_EXPORT_SUBTESTS)
 
 #include <wolfssl/version.h>
 #include <wolfssl/wolfcrypt/types.h>
@@ -90,7 +92,9 @@ const byte const_byte_array[] = "A+Gd\0\0\0";
 #else
     static ssize_t max_relative_heap_bytes = -1;
 #endif
-#define PRINT_HEAP_CHECKPOINT() {                                            \
+
+/* Optional breadcrumb string (b), and interaction, (i) not implemented */
+#define PRINT_HEAP_CHECKPOINT(b, i) {                                        \
     const ssize_t _rha = wolfCrypt_heap_peakAllocs_checkpoint() - heap_baselineAllocs; \
     const ssize_t _rhb = wolfCrypt_heap_peakBytes_checkpoint() - heap_baselineBytes;   \
     printf("    relative heap peak usage: %ld alloc%s, %ld bytes\n",         \
@@ -107,8 +111,53 @@ const byte const_byte_array[] = "A+Gd\0\0\0";
     heap_baselineBytes = wolfCrypt_heap_peakBytes_checkpoint();              \
     }
 #else
-#define PRINT_HEAP_CHECKPOINT() WC_DO_NOTHING
+    #define PRINT_HEAP_CHECKPOINT(b, i) WC_DO_NOTHING;
+    #define PRINT_HEAP_ADDRESS(p) WC_DO_NOTHING;
 #endif /* WOLFSSL_TRACK_MEMORY_VERBOSE && !WOLFSSL_STATIC_MEMORY */
+
+#ifdef WOLFSSL_ESPIDF
+    #undef  PRINT_HEAP_CHECKPOINT
+    #undef  PRINT_HEAP_ADDRESS
+    static int esp_start_heap = 0;
+    static int esp_last_heap = 0;
+    static int esp_this_heap = 0;
+
+    #ifdef DEBUG_WOLFSSL_ESP32_HEAP
+        #define PRINT_HEAP_CHECKPOINT(b, i)                                  \
+            esp_last_heap = esp_this_heap;                                   \
+            esp_this_heap = (int)heap_caps_get_free_size(MALLOC_CAP_8BIT);   \
+            if (esp_start_heap == 0) {                                       \
+                esp_start_heap = esp_this_heap;                              \
+            }                                                                \
+            ESP_LOGI(ESPIDF_TAG, "%s #%d; Heap free: %d",                    \
+                                ((b) ? (b) : ""),  /* breadcumb string */    \
+                                ((i) ? (i) : 0),   /* index */               \
+                                 esp_this_heap);
+
+        #define PRINT_HEAP_ADDRESS(p)                                        \
+                ESP_LOGI(ESPIDF_TAG, "Allocated address: %p", (void *)(p));
+    #else
+        /* Even without verbose heap, we'll warn on anomalous values */
+        #define PRINT_HEAP_CHECKPOINT(b, i)                                  \
+            esp_last_heap = esp_this_heap;                                   \
+            esp_this_heap = (int)heap_caps_get_free_size(MALLOC_CAP_8BIT);   \
+            if (esp_start_heap == 0) {                                       \
+                esp_start_heap = esp_this_heap;                              \
+                esp_last_heap  = esp_this_heap;                              \
+            }                                                                \
+            if (esp_this_heap == esp_last_heap) {                            \
+                ESP_LOGV(ESPIDF_TAG, "Heap constant: %d", esp_this_heap);    \
+            }                                                                \
+            else {                                                           \
+                ESP_LOGI(ESPIDF_TAG, "Breadcrumb: %s", ((b) ? (b) : ""));    \
+                ESP_LOGW(ESPIDF_TAG, "Warning: this heap %d != last %d",     \
+                                     esp_this_heap, esp_last_heap);          \
+            }
+
+        #define PRINT_HEAP_ADDRESS(p) WC_DO_NOTHING;
+    #endif
+#endif /* WOLFSSL_ESPIDF */
+
 
 #ifdef USE_FLAT_TEST_H
     #ifdef HAVE_CONFIG_H
@@ -832,7 +881,7 @@ WOLFSSL_TEST_SUBROUTINE wc_test_ret_t aes_eax_test(void);
 /* Not all unexpected conditions are actually errors .*/
 #define WARNING_OUT(err, eLabel) do { ret = (err); goto eLabel; } while (0)
 
-static void render_error_message(const char* msg, wc_test_ret_t es)
+void wc_test_render_error_message(const char* msg, wc_test_ret_t es)
 {
     (void)msg;
     (void)es;
@@ -917,7 +966,7 @@ static THREAD_RETURN err_sys(const char* msg, int es)
 static wc_test_ret_t err_sys(const char* msg, wc_test_ret_t es)
 #endif
 {
-    render_error_message(msg, es);
+    wc_test_render_error_message(msg, es);
     print_fiducials();
 #ifdef WOLFSSL_LINUXKM
     EXIT_TEST(es);
@@ -1413,7 +1462,7 @@ static WOLFSSL_TEST_SUBROUTINE wc_test_ret_t nist_sp80056c_kdf_test(void)
         va_start(args, fmt);
         STACK_SIZE_CHECKPOINT_WITH_MAX_CHECK(max_relative_stack, vprintf(fmt, args));
         va_end(args);
-        PRINT_HEAP_CHECKPOINT();
+        PRINT_HEAP_CHECKPOINT("",0);
         TEST_SLEEP();
         ASSERT_RESTORED_VECTOR_REGISTERS(exit(1););
     }
@@ -1427,13 +1476,13 @@ static WOLFSSL_TEST_SUBROUTINE wc_test_ret_t nist_sp80056c_kdf_test(void)
             (max_relative_stack, printf(__VA_ARGS__)) < 0) {    \
             return err_sys("post-test check failed", WC_TEST_RET_ENC_NC);\
         }                                                       \
-        PRINT_HEAP_CHECKPOINT();                                \
+        PRINT_HEAP_CHECKPOINT("TEST_PASS", 0)                            \
         ASSERT_RESTORED_VECTOR_REGISTERS(exit(1););             \
     }
 #endif
 
 #ifdef TEST_ALWAYS_RUN_TO_END
-    #define TEST_FAIL(msg, retval) do { last_failed_test_ret = (retval); render_error_message(msg, retval); } while (0)
+    #define TEST_FAIL(msg, retval) do { last_failed_test_ret = (retval); wc_test_render_error_message(msg, retval); } while (0)
 #elif !defined(TEST_FAIL)
     #define TEST_FAIL(msg, retval) return err_sys(msg, retval)
 #endif
@@ -2871,27 +2920,27 @@ WOLFSSL_TEST_SUBROUTINE wc_test_ret_t error_test(void)
 WOLFSSL_TEST_SUBROUTINE wc_test_ret_t base64_test(void)
 {
     wc_test_ret_t ret;
-    WOLFSSL_SMALL_STACK_STATIC const byte good[] = "A+Gd\0\0\0";
-    WOLFSSL_SMALL_STACK_STATIC const byte goodEnd[] = "A+Gd \r\n";
-    WOLFSSL_SMALL_STACK_STATIC const byte good_spaces[] = " A + G d \0";
+    static const byte good[] = "A+Gd\0\0\0";
+    static const byte goodEnd[] = "A+Gd \r\n";
+    static const byte good_spaces[] = " A + G d \0";
     byte       out[128];
     word32     outLen;
 #ifdef WOLFSSL_BASE64_ENCODE
     byte       data[3];
     word32     dataLen;
     byte       longData[79] = { 0 };
-    WOLFSSL_SMALL_STACK_STATIC const byte symbols[] = "+/A=";
+    static const byte symbols[] = "+/A=";
 #endif
-    WOLFSSL_SMALL_STACK_STATIC const byte badSmall[] = "AAA!Gdj=";
-    WOLFSSL_SMALL_STACK_STATIC const byte badLarge[] = "AAA~Gdj=";
-    WOLFSSL_SMALL_STACK_STATIC const byte badEOL[] = "A+Gd!AA";
-    WOLFSSL_SMALL_STACK_STATIC const byte badPadding[] = "AA=A";
-    WOLFSSL_SMALL_STACK_STATIC const byte badChar[] = ",-.:;<=>?@[\\]^_`";
-    byte goodChar[] =
+    static const byte badSmall[] = "AAA!Gdj=";
+    static const byte badLarge[] = "AAA~Gdj=";
+    static const byte badEOL[] = "A+Gd!AA";
+    static const byte badPadding[] = "AA=A";
+    static const byte badChar[] = ",-.:;<=>?@[\\]^_`";
+    static const byte goodChar[] =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         "abcdefghijklmnopqrstuvwxyz"
         "0123456789+/;";
-    byte charTest[] = "A+Gd\0\0\0";
+    static const byte charTest[] = "A+Gd\0\0\0";
     int        i;
     WOLFSSL_ENTER("base64_test");
 
@@ -2905,7 +2954,8 @@ WOLFSSL_TEST_SUBROUTINE wc_test_ret_t base64_test(void)
     if (ret != 0)
         return WC_TEST_RET_ENC_EC(ret);
     outLen = sizeof(goodChar);
-    ret = Base64_Decode(goodChar, sizeof(goodChar), goodChar, &outLen);
+    XMEMCPY(out, goodChar, sizeof(goodChar));
+    ret = Base64_Decode(out, sizeof(goodChar), out, &outLen);
     if (ret != 0)
         return WC_TEST_RET_ENC_EC(ret);
     if (outLen != 64 / 4 * 3)
@@ -2942,24 +2992,102 @@ WOLFSSL_TEST_SUBROUTINE wc_test_ret_t base64_test(void)
     /* Invalid character less than 0x2b */
     for (i = 1; i < 0x2b; i++) {
         outLen = sizeof(out);
-        charTest[0] = (byte)i;
-        ret = Base64_Decode(charTest, sizeof(charTest), out, &outLen);
+        XMEMCPY(out, charTest, sizeof(charTest));
+        out[0] = (byte)i;
+        ret = Base64_Decode(out, sizeof(charTest), out, &outLen);
         if (ret != WC_NO_ERR_TRACE(ASN_INPUT_E))
             return WC_TEST_RET_ENC_I(i);
     }
     /* Bad characters in range 0x2b - 0x7a. */
     for (i = 0; i < (int)sizeof(badChar) - 1; i++) {
         outLen = sizeof(out);
-        charTest[0] = badChar[i];
-        ret = Base64_Decode(charTest, sizeof(charTest), out, &outLen);
+        XMEMCPY(out, charTest, sizeof(charTest));
+        out[0] = badChar[i];
+        ret = Base64_Decode(out, sizeof(charTest), out, &outLen);
         if (ret != WC_NO_ERR_TRACE(ASN_INPUT_E))
             return WC_TEST_RET_ENC_I(i);
     }
     /* Invalid character greater than 0x7a */
     for (i = 0x7b; i < 0x100; i++) {
         outLen = sizeof(out);
-        charTest[0] = (byte)i;
-        ret = Base64_Decode(charTest, sizeof(charTest), out, &outLen);
+        XMEMCPY(out, charTest, sizeof(charTest));
+        out[0] = (byte)i;
+        ret = Base64_Decode(out, sizeof(charTest), out, &outLen);
+        if (ret != WC_NO_ERR_TRACE(ASN_INPUT_E))
+            return WC_TEST_RET_ENC_I(i);
+    }
+
+    /* Same tests again, using Base64_Decode_nonCT() */
+
+    /* Good Base64 encodings. */
+    outLen = sizeof(out);
+    ret = Base64_Decode_nonCT(good, sizeof(good), out, &outLen);
+    if (ret != 0)
+        return WC_TEST_RET_ENC_EC(ret);
+    outLen = sizeof(out);
+    ret = Base64_Decode_nonCT(goodEnd, sizeof(goodEnd), out, &outLen);
+    if (ret != 0)
+        return WC_TEST_RET_ENC_EC(ret);
+    outLen = sizeof(goodChar);
+    XMEMCPY(out, goodChar, sizeof(goodChar));
+    ret = Base64_Decode_nonCT(out, sizeof(goodChar), out, &outLen);
+    if (ret != 0)
+        return WC_TEST_RET_ENC_EC(ret);
+    if (outLen != 64 / 4 * 3)
+        return WC_TEST_RET_ENC_NC;
+    outLen = sizeof(out);
+    ret = Base64_Decode_nonCT(good_spaces, sizeof(good_spaces), out, &outLen);
+    if (ret != 0)
+        return WC_TEST_RET_ENC_EC(ret);
+
+    /* Bad parameters. */
+    outLen = 1;
+    ret = Base64_Decode_nonCT(good, sizeof(good), out, &outLen);
+    if (ret != WC_NO_ERR_TRACE(BAD_FUNC_ARG))
+        return WC_TEST_RET_ENC_EC(ret);
+
+    outLen = sizeof(out);
+    ret = Base64_Decode_nonCT(badEOL, sizeof(badEOL), out, &outLen);
+    if (ret != WC_NO_ERR_TRACE(ASN_INPUT_E))
+        return WC_TEST_RET_ENC_EC(ret);
+    outLen = sizeof(out);
+    ret = Base64_Decode_nonCT(badPadding, sizeof(badPadding), out, &outLen);
+    if (ret != WC_NO_ERR_TRACE(ASN_INPUT_E))
+        return WC_TEST_RET_ENC_EC(ret);
+    /* Bad character at each offset 0-3. */
+    for (i = 0; i < 4; i++) {
+        outLen = sizeof(out);
+        ret = Base64_Decode_nonCT(badSmall + i, 4, out, &outLen);
+        if (ret != WC_NO_ERR_TRACE(ASN_INPUT_E))
+            return WC_TEST_RET_ENC_I(i);
+        ret = Base64_Decode_nonCT(badLarge + i, 4, out, &outLen);
+        if (ret != WC_NO_ERR_TRACE(ASN_INPUT_E))
+            return WC_TEST_RET_ENC_I(i);
+    }
+    /* Invalid character less than 0x2b */
+    for (i = 1; i < 0x2b; i++) {
+        outLen = sizeof(out);
+        XMEMCPY(out, charTest, sizeof(charTest));
+        out[0] = (byte)i;
+        ret = Base64_Decode_nonCT(out, sizeof(charTest), out, &outLen);
+        if (ret != WC_NO_ERR_TRACE(ASN_INPUT_E))
+            return WC_TEST_RET_ENC_I(i);
+    }
+    /* Bad characters in range 0x2b - 0x7a. */
+    for (i = 0; i < (int)sizeof(badChar) - 1; i++) {
+        outLen = sizeof(out);
+        XMEMCPY(out, charTest, sizeof(charTest));
+        out[0] = badChar[i];
+        ret = Base64_Decode_nonCT(out, sizeof(charTest), out, &outLen);
+        if (ret != WC_NO_ERR_TRACE(ASN_INPUT_E))
+            return WC_TEST_RET_ENC_I(i);
+    }
+    /* Invalid character greater than 0x7a */
+    for (i = 0x7b; i < 0x100; i++) {
+        outLen = sizeof(out);
+        XMEMCPY(out, charTest, sizeof(charTest));
+        out[0] = (byte)i;
+        ret = Base64_Decode_nonCT(out, sizeof(charTest), out, &outLen);
         if (ret != WC_NO_ERR_TRACE(ASN_INPUT_E))
             return WC_TEST_RET_ENC_I(i);
     }
@@ -6075,6 +6203,7 @@ WOLFSSL_TEST_SUBROUTINE wc_test_ret_t hash_test(void)
 #else
     wc_HashAlg       hash[1];
 #endif
+
     int              ret, exp_ret;
     int              i, j;
     int              digestSz;
@@ -6135,7 +6264,10 @@ WOLFSSL_TEST_SUBROUTINE wc_test_ret_t hash_test(void)
 #if defined(WOLFSSL_SMALL_STACK) && !defined(WOLFSSL_NO_MALLOC)
     hash = wc_HashNew(WC_HASH_TYPE_SHA256, HEAP_HINT, devId, &ret);
     if (hash == NULL) {
-        return WC_TEST_RET_ENC_EC(ret);
+        ERROR_OUT(WC_TEST_RET_ENC_EC(ret), out);
+    }
+    else {
+        PRINT_HEAP_ADDRESS(hash);
     }
 #else
     XMEMSET(hash, 0, sizeof(wc_HashAlg));
@@ -6164,9 +6296,23 @@ WOLFSSL_TEST_SUBROUTINE wc_test_ret_t hash_test(void)
     if (ret != WC_NO_ERR_TRACE(BAD_FUNC_ARG))
         ERROR_OUT(WC_TEST_RET_ENC_EC(ret), out);
 
+#if defined(WOLFSSL_SMALL_STACK) && !defined(WOLFSSL_NO_MALLOC)
+    /* Delete the WC_HASH_TYPE_SHA256 type hash for the following tests */
+    ret = wc_HashDelete(hash, &hash);
+    if (ret != 0)
+        ERROR_OUT(WC_TEST_RET_ENC_EC(ret), out);
+#endif
+
     /* Try invalid hash algorithms. */
     for (i = 0; i < (int)(sizeof(typesBad)/sizeof(*typesBad)); i++) {
+#if defined(WOLFSSL_SMALL_STACK) && !defined(WOLFSSL_NO_MALLOC)
+        hash = wc_HashNew(typesBad[i], HEAP_HINT, devId, &ret);
+#endif
+        if (ret != WC_NO_ERR_TRACE(BAD_FUNC_ARG)) {
+            ERROR_OUT(WC_TEST_RET_ENC_I(i), out);
+        }
         ret = wc_HashInit(hash, typesBad[i]);
+
         if (ret != WC_NO_ERR_TRACE(BAD_FUNC_ARG))
             ERROR_OUT(WC_TEST_RET_ENC_I(i), out);
         ret = wc_HashUpdate(hash, typesBad[i], data, sizeof(data));
@@ -6175,17 +6321,51 @@ WOLFSSL_TEST_SUBROUTINE wc_test_ret_t hash_test(void)
         ret = wc_HashFinal(hash, typesBad[i], out);
         if (ret != WC_NO_ERR_TRACE(BAD_FUNC_ARG))
             ERROR_OUT(WC_TEST_RET_ENC_I(i), out);
-        wc_HashFree(hash, typesBad[i]);
+        ret = wc_HashFree(hash, typesBad[i]);
+        if (ret != WC_NO_ERR_TRACE(BAD_FUNC_ARG))
+            ERROR_OUT(WC_TEST_RET_ENC_I(i), out);
+
+#if defined(WOLFSSL_SMALL_STACK) && !defined(WOLFSSL_NO_MALLOC)
+        ret = wc_HashDelete(hash, &hash);
+        if (ret != WC_NO_ERR_TRACE(BAD_FUNC_ARG)) {
+            WOLFSSL_MSG("ERROR: wc_HashDelete failed, expected BAD_FUNC_ARG.");
+            ERROR_OUT(WC_TEST_RET_ENC_I(i), out);
+        }
+#endif
     }
 
     /* Try valid hash algorithms. */
-    for (i = 0, j = 0; i < (int)(sizeof(typesGood)/sizeof(*typesGood)); i++) {
-        exp_ret = 0;
-        if (typesGood[i] == typesNoImpl[j]) {
-            /* Recognized but no implementation compiled in. */
-            exp_ret = HASH_TYPE_E;
-            j++;
+    for (i = 0; i < (int)(sizeof(typesGood)/sizeof(*typesGood)); i++) {
+        exp_ret = 0; /* For valid hash, we expect return result to be zero */
+
+        /* See if the current hash type is one of the known types that are
+         * not implemented or not compiled in (disabled): */
+        for(j = 0; j < (int)(sizeof(typesNoImpl) / sizeof(*typesNoImpl)); j++) {
+            if (typesGood[i] == typesNoImpl[j]) {
+                exp_ret = HASH_TYPE_E;
+                break; /* found one. don't keep looking.
+                        * we won't test hashes not implemented */
+            }
         }
+
+        /* If the expected return value is HASH_TYPE_E before we've even started
+         * it must be a hash type not implemented or disabled, so skip it. */
+        if (exp_ret == WC_NO_ERR_TRACE(HASH_TYPE_E)) {
+            continue; /* go fetch the next typesGood[i] */
+        }
+
+        /* Good type and implemented: */
+#if defined(WOLFSSL_SMALL_STACK) && !defined(WOLFSSL_NO_MALLOC)
+        hash = wc_HashNew(typesGood[i], HEAP_HINT, devId, &ret);
+        if (hash == NULL) {
+            WOLFSSL_MSG("ERROR: wc_HashNew failed.");
+            ERROR_OUT(WC_TEST_RET_ENC_EC(ret), out);
+        }
+
+       if (ret != 0) {
+           ERROR_OUT(WC_TEST_RET_ENC_EC(BAD_FUNC_ARG), out);
+       }
+#endif
         ret = wc_HashInit(hash, typesGood[i]);
         if (ret != exp_ret)
             ERROR_OUT(WC_TEST_RET_ENC_I(i), out);
@@ -6198,8 +6378,6 @@ WOLFSSL_TEST_SUBROUTINE wc_test_ret_t hash_test(void)
         wc_HashFree(hash, typesGood[i]);
 
         digestSz = wc_HashGetDigestSize(typesGood[i]);
-        if (exp_ret < 0 && digestSz != exp_ret)
-            ERROR_OUT(WC_TEST_RET_ENC_I(i), out);
         if (exp_ret == 0 && digestSz < 0)
             ERROR_OUT(WC_TEST_RET_ENC_I(i), out);
         if (exp_ret == 0) {
@@ -6215,16 +6393,13 @@ WOLFSSL_TEST_SUBROUTINE wc_test_ret_t hash_test(void)
             ERROR_OUT(WC_TEST_RET_ENC_I(i), out);
 
         ret = wc_HashGetBlockSize(typesGood[i]);
-        if (exp_ret < 0 && ret != exp_ret)
-            ERROR_OUT(WC_TEST_RET_ENC_I(i), out);
         if (exp_ret == 0 && ret < 0)
             ERROR_OUT(WC_TEST_RET_ENC_I(i), out);
 
 #if !defined(NO_ASN) || !defined(NO_DH) || defined(HAVE_ECC)
         ret = wc_HashGetOID(typesGood[i]);
-        if (ret == WC_NO_ERR_TRACE(BAD_FUNC_ARG) ||
-                (exp_ret == 0 && ret == WC_NO_ERR_TRACE(HASH_TYPE_E)) ||
-                (exp_ret != 0 && ret != WC_NO_ERR_TRACE(HASH_TYPE_E))) {
+        if ( (ret == WC_NO_ERR_TRACE(HASH_TYPE_E) && (exp_ret == 0)) ||
+             (ret == WC_NO_ERR_TRACE(BAD_FUNC_ARG))  ) {
             ERROR_OUT(WC_TEST_RET_ENC_I(i), out);
         }
 
@@ -6232,8 +6407,18 @@ WOLFSSL_TEST_SUBROUTINE wc_test_ret_t hash_test(void)
         if (exp_ret == 0 && hashType != typesGood[i])
             ERROR_OUT(WC_TEST_RET_ENC_I(i), out);
 #endif /* !defined(NO_ASN) || !defined(NO_DH) || defined(HAVE_ECC) */
-    }
 
+#if defined(WOLFSSL_SMALL_STACK) && !defined(WOLFSSL_NO_MALLOC)
+        ret = wc_HashDelete(hash, &hash);
+        if (ret < 0) {
+            WOLFSSL_MSG("ERROR: Failed to delete hash.");
+            ERROR_OUT(WC_TEST_RET_ENC_I(i), out);
+        }
+#endif
+    } /* Valid hash functions */
+
+
+    /* non wc_HashAlg hash object tests follow: */
     for (i = 0; i < (int)(sizeof(typesHashBad)/sizeof(*typesHashBad)); i++) {
         ret = wc_Hash(typesHashBad[i], data, sizeof(data), out, sizeof(out));
         if ((ret != WC_NO_ERR_TRACE(BAD_FUNC_ARG)) &&
@@ -35463,8 +35648,12 @@ static wc_test_ret_t curve255519_der_test(void)
         0xA2, 0x5B, 0x38, 0xFD, 0x96, 0xDB, 0x2A, 0x26
     };
     curve25519_key key;
+#if !defined(HAVE_FIPS) || FIPS_VERSION3_GE(7,0,0)
+    byte output[CURVE25519_MAX_KEY_TO_DER_SZ];
+#else
     byte output[128];
-    word32 outputSz = 128;
+#endif
+    word32 outputSz = (word32)sizeof(output);
     word32 idx;
 
     ret = wc_curve25519_init_ex(&key, HEAP_HINT, devId);
@@ -60700,8 +60889,8 @@ static void print_fiducials(void) {
            fiducial1, fiducial2, fiducial3, fiducial4);
 }
 
-#else
+#else /* NO_CRYPT_TEST && !WC_TEST_EXPORT_SUBTESTS */
     #ifndef NO_MAIN_DRIVER
         int main(void) { return 0; }
     #endif
-#endif /* NO_CRYPT_TEST */
+#endif /* NO_CRYPT_TEST && !WC_TEST_EXPORT_SUBTESTS */

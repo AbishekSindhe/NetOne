@@ -36,17 +36,11 @@
  * DEBUG_CRYPTOCB
  */
 
-#ifdef HAVE_CONFIG_H
-    #include <config.h>
-#endif
-
-#include <wolfssl/wolfcrypt/settings.h>
+#include <wolfssl/wolfcrypt/libwolfssl_sources.h>
 
 #ifdef WOLF_CRYPTO_CB
 
 #include <wolfssl/wolfcrypt/cryptocb.h>
-#include <wolfssl/wolfcrypt/error-crypt.h>
-#include <wolfssl/wolfcrypt/logging.h>
 
 #ifdef HAVE_ARIA
     #include <wolfssl/wolfcrypt/port/aria/aria-cryptocb.h>
@@ -207,6 +201,8 @@ WOLFSSL_API void wc_CryptoCb_InfoString(wc_CryptoInfo* info)
             info->cipher.type, info->cipher.ctx);
     }
 #endif /* !NO_AES || !NO_DES3 */
+#if !defined(NO_SHA) || !defined(NO_SHA256) || \
+    defined(WOLFSSL_SHA512) || defined(WOLFSSL_SHA384) || defined(WOLFSSL_SHA3)
     else if (info->algo_type == WC_ALGO_TYPE_HASH) {
         printf("Crypto CB: %s %s (%d) (%p ctx) %s\n",
             GetAlgoTypeStr(info->algo_type),
@@ -214,6 +210,8 @@ WOLFSSL_API void wc_CryptoCb_InfoString(wc_CryptoInfo* info)
             info->hash.type, info->hash.ctx,
             (info->hash.in != NULL) ? "Update" : "Final");
     }
+#endif
+#ifndef NO_HMAC
     else if (info->algo_type == WC_ALGO_TYPE_HMAC) {
         printf("Crypto CB: %s %s (%d) (%p ctx) %s\n",
             GetAlgoTypeStr(info->algo_type),
@@ -221,6 +219,7 @@ WOLFSSL_API void wc_CryptoCb_InfoString(wc_CryptoInfo* info)
             info->hmac.macType, info->hmac.hmac,
             (info->hmac.in != NULL) ? "Update" : "Final");
     }
+#endif
 #ifdef WOLFSSL_CMAC
     else if (info->algo_type == WC_ALGO_TYPE_CMAC) {
         printf("Crypto CB: %s %s (%d) (%p ctx) %s %s %s\n",

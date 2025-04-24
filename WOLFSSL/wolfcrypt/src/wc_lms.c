@@ -19,13 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1335, USA
  */
 
-#ifdef HAVE_CONFIG_H
-    #include <config.h>
-#endif
-
-#include <wolfssl/wolfcrypt/settings.h>
-#include <wolfssl/wolfcrypt/error-crypt.h>
-#include <wolfssl/wolfcrypt/logging.h>
+#include <wolfssl/wolfcrypt/libwolfssl_sources.h>
 
 #if defined(WOLFSSL_HAVE_LMS) && defined(WOLFSSL_WC_LMS)
 #include <wolfssl/wolfcrypt/wc_lms.h>
@@ -1262,6 +1256,30 @@ int wc_LmsKey_Verify(LmsKey* key, const byte* sig, word32 sigSz,
     }
 
     return ret;
+}
+
+/* Get the Key ID from the raw private key data.
+ *
+ * PRIV = Q | PARAMS | SEED | I
+ * where I is the Key ID.
+ *
+ * @param [in] priv    Private key data.
+ * @param [in] privSz  Size of private key data.
+ * @param  Pointer to 16 byte Key ID in the private key.
+ * @return  NULL on failure.
+ */
+const byte * wc_LmsKey_GetKidFromPrivRaw(const byte * priv, word32 privSz)
+{
+    word32 seedSz = privSz - LMS_Q_LEN + HSS_PRIV_KEY_PARAM_SET_LEN - LMS_I_LEN;
+
+    if (priv == NULL) {
+        return NULL;
+    }
+    if ((seedSz != WC_SHA256_192_DIGEST_SIZE) &&
+            (seedSz != WC_SHA256_DIGEST_SIZE)) {
+        return NULL;
+    }
+    return priv - LMS_I_LEN;
 }
 
 #endif /* WOLFSSL_HAVE_LMS && WOLFSSL_WC_LMS */

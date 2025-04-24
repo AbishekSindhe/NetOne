@@ -19,11 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1335, USA
  */
 
-#ifdef HAVE_CONFIG_H
-    #include <config.h>
-#endif
-
-#include <wolfssl/wolfcrypt/settings.h>
+#include <wolfssl/wolfcrypt/libwolfssl_sources.h>
 
 #include <wolfssl/internal.h>
 #ifndef WC_NO_RNG
@@ -2385,6 +2381,27 @@ WOLFSSL_BN_CTX* wolfSSL_BN_CTX_new(void)
 
     return ctx;
 }
+
+
+#ifndef NO_WOLFSSL_STUB
+/* deprecated
+ *
+ * Initialize a BN context object.
+ * This function was removed in OpenSSL 1.1.0 and later.
+ * Keeping a stub function here for older applications that have BN_CTX_init()
+ * calls.
+ *
+ * @param [in] ctx  Dummy BN context.
+ */
+void wolfSSL_BN_CTX_init(WOLFSSL_BN_CTX* ctx)
+{
+    (void)ctx;
+    WOLFSSL_ENTER("wolfSSL_BN_CTX_init");
+    WOLFSSL_STUB("wolfSSL_BN_CTX_init");
+    WOLFSSL_MSG("wolfSSL_BN_CTX_init is deprecated");
+}
+#endif
+
 
 /* Free a BN context object.
  *

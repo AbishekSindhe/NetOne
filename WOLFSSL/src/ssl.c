@@ -19,12 +19,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1335, USA
  */
 
+#include <wolfssl/wolfcrypt/libwolfssl_sources.h>
 
-#ifdef HAVE_CONFIG_H
-    #include <config.h>
-#endif
-
-#include <wolfssl/wolfcrypt/settings.h>
 #if defined(OPENSSL_EXTRA) && !defined(_WIN32) && !defined(_GNU_SOURCE)
     /* turn on GNU extensions for XISASCII */
     #define _GNU_SOURCE 1
@@ -1010,7 +1006,7 @@ int GetEchConfigsEx(WOLFSSL_EchConfig* configs, byte* output, word32* outputLen)
     word32 totalLen = 2;
     word32 workingOutputLen;
 
-    if (configs == NULL || outputLen == NULL)
+    if (configs == NULL || outputLen == NULL || *outputLen < totalLen)
         return BAD_FUNC_ARG;
 
     workingOutputLen = *outputLen - totalLen;
@@ -2886,23 +2882,32 @@ int wolfSSL_GetOutputSize(WOLFSSL* ssl, int inSz)
 #ifdef HAVE_ECC
 int wolfSSL_CTX_SetMinEccKey_Sz(WOLFSSL_CTX* ctx, short keySz)
 {
+    short keySzBytes;
+
     WOLFSSL_ENTER("wolfSSL_CTX_SetMinEccKey_Sz");
-    if (ctx == NULL || keySz < 0 || keySz % 8 != 0) {
-        WOLFSSL_MSG("Key size must be divisible by 8 or ctx was null");
+    if (ctx == NULL || keySz < 0) {
+        WOLFSSL_MSG("Key size must be positive value or ctx was null");
         return BAD_FUNC_ARG;
+    }
+
+    if (keySz % 8 == 0) {
+        keySzBytes = keySz / 8;
+    }
+    else {
+        keySzBytes = (keySz / 8) + 1;
     }
 
 #if defined(WOLFSSL_SYS_CRYPTO_POLICY)
     if (crypto_policy.enabled) {
-        if (ctx->minEccKeySz > (keySz / 8)) {
+        if (ctx->minEccKeySz > (keySzBytes)) {
             return CRYPTO_POLICY_FORBIDDEN;
         }
     }
 #endif /* WOLFSSL_SYS_CRYPTO_POLICY */
 
-    ctx->minEccKeySz     = keySz / 8;
+    ctx->minEccKeySz     = keySzBytes;
 #ifndef NO_CERTS
-    ctx->cm->minEccKeySz = keySz / 8;
+    ctx->cm->minEccKeySz = keySzBytes;
 #endif
     return WOLFSSL_SUCCESS;
 }
@@ -2910,21 +2915,30 @@ int wolfSSL_CTX_SetMinEccKey_Sz(WOLFSSL_CTX* ctx, short keySz)
 
 int wolfSSL_SetMinEccKey_Sz(WOLFSSL* ssl, short keySz)
 {
+    short keySzBytes;
+
     WOLFSSL_ENTER("wolfSSL_SetMinEccKey_Sz");
-    if (ssl == NULL || keySz < 0 || keySz % 8 != 0) {
-        WOLFSSL_MSG("Key size must be divisible by 8 or ssl was null");
+    if (ssl == NULL || keySz < 0) {
+        WOLFSSL_MSG("Key size must be positive value or ctx was null");
         return BAD_FUNC_ARG;
+    }
+
+    if (keySz % 8 == 0) {
+        keySzBytes = keySz / 8;
+    }
+    else {
+        keySzBytes = (keySz / 8) + 1;
     }
 
 #if defined(WOLFSSL_SYS_CRYPTO_POLICY)
     if (crypto_policy.enabled) {
-        if (ssl->options.minEccKeySz > (keySz / 8)) {
+        if (ssl->options.minEccKeySz > (keySzBytes)) {
             return CRYPTO_POLICY_FORBIDDEN;
         }
     }
 #endif /* WOLFSSL_SYS_CRYPTO_POLICY */
 
-    ssl->options.minEccKeySz = keySz / 8;
+    ssl->options.minEccKeySz = keySzBytes;
     return WOLFSSL_SUCCESS;
 }
 
@@ -12497,6 +12511,7 @@ int wolfSSL_set_compression(WOLFSSL* ssl)
             err = WOLFSSL_SUCCESS;
 cleanup:
             wolfSSL_X509_free(cert);
+            cert = NULL;
             wolfSSL_BIO_free(bio);
             if (err != WOLFSSL_SUCCESS) {
                 /* We failed so return NULL */
@@ -14493,40 +14508,25 @@ static int x509GetIssuerFromCM(WOLFSSL_X509 **issuer, WOLFSSL_CERT_MANAGER* cm,
  * @param cm The cert manager that is queried for the issuer
  * @param x  This cert's issuer will be queried in cm
  * @param sk The issuer is pushed onto this stack
- * @return WOLFSSL_SUCCESS on success
- *         WOLFSSL_FAILURE on no issuer found
+ * @return 0 on success or no issuer found
  *         WOLFSSL_FATAL_ERROR on a fatal error
  */
 static int PushCAx509Chain(WOLFSSL_CERT_MANAGER* cm,
         WOLFSSL_X509 *x, WOLFSSL_STACK* sk)
 {
-    WOLFSSL_X509* issuer[MAX_CHAIN_DEPTH];
     int i;
-    int push = 1;
-    int ret = WOLFSSL_SUCCESS;
-
     for (i = 0; i < MAX_CHAIN_DEPTH; i++) {
-        if (x509GetIssuerFromCM(&issuer[i], cm, x)
-                != WOLFSSL_SUCCESS)
+        WOLFSSL_X509* issuer = NULL;
+        if (x509GetIssuerFromCM(&issuer, cm, x) != WOLFSSL_SUCCESS)
             break;
-        x = issuer[i];
-    }
-    if (i == 0) /* No further chain found */
-        return WOLFSSL_FAILURE;
-    i--;
-    for (; i >= 0; i--) {
-        if (push) {
-            if (wolfSSL_sk_X509_push(sk, issuer[i]) <= 0) {
-                wolfSSL_X509_free(issuer[i]);
-                ret = WOLFSSL_FATAL_ERROR;
-                push = 0; /* Free the rest of the unpushed certs */
-            }
+        if (wolfSSL_sk_X509_push(sk, issuer) <= 0) {
+            wolfSSL_X509_free(issuer);
+            issuer = NULL;
+            return WOLFSSL_FATAL_ERROR;
         }
-        else {
-            wolfSSL_X509_free(issuer[i]);
-        }
+        x = issuer;
     }
-    return ret;
+    return 0;
 }
 
 
@@ -14540,36 +14540,34 @@ static WOLF_STACK_OF(WOLFSSL_X509)* CreatePeerCertChain(const WOLFSSL* ssl,
     WOLFSSL_STACK* sk;
     WOLFSSL_X509* x509;
     int i = 0;
-    int ret;
+    int err;
 
     WOLFSSL_ENTER("wolfSSL_set_peer_cert_chain");
     if ((ssl == NULL) || (ssl->session->chain.count == 0))
         return NULL;
 
     sk = wolfSSL_sk_X509_new_null();
-    i = ssl->session->chain.count-1;
-    for (; i >= 0; i--) {
+    for (i = 0; i < ssl->session->chain.count; i++) {
         x509 = wolfSSL_X509_new_ex(ssl->heap);
         if (x509 == NULL) {
             WOLFSSL_MSG("Error Creating X509");
             wolfSSL_sk_X509_pop_free(sk, NULL);
             return NULL;
         }
-        ret = DecodeToX509(x509, ssl->session->chain.certs[i].buffer,
+        err = DecodeToX509(x509, ssl->session->chain.certs[i].buffer,
                              ssl->session->chain.certs[i].length);
-        if (ret == 0 && i == ssl->session->chain.count-1 && verifiedFlag) {
+        if (err == 0 && wolfSSL_sk_X509_push(sk, x509) <= 0)
+            err = WOLFSSL_FATAL_ERROR;
+        if (err == 0 && i == ssl->session->chain.count-1 && verifiedFlag) {
             /* On the last element in the verified chain try to add the CA chain
-             * first if we have one for this cert */
+             * if we have one for this cert */
             SSL_CM_WARNING(ssl);
-            if (PushCAx509Chain(SSL_CM(ssl), x509, sk)
-                    == WC_NO_ERR_TRACE(WOLFSSL_FATAL_ERROR)) {
-                ret = WOLFSSL_FATAL_ERROR;
-            }
+            err = PushCAx509Chain(SSL_CM(ssl), x509, sk);
         }
-
-        if (ret != 0 || wolfSSL_sk_X509_push(sk, x509) <= 0) {
+        if (err != 0) {
             WOLFSSL_MSG("Error decoding cert");
             wolfSSL_X509_free(x509);
+            x509 = NULL;
             wolfSSL_sk_X509_pop_free(sk, NULL);
             return NULL;
         }
@@ -14599,7 +14597,7 @@ WOLF_STACK_OF(WOLFSSL_X509)* wolfSSL_set_peer_cert_chain(WOLFSSL* ssl)
             if (ssl->session->peer)
                 wolfSSL_X509_free(ssl->session->peer);
 
-            ssl->session->peer = wolfSSL_sk_X509_pop(sk);
+            ssl->session->peer = wolfSSL_sk_X509_shift(sk);
             ssl->session->peerVerifyRet = ssl->peerVerifyRet;
         }
         if (ssl->peerCertChain != NULL)
@@ -14747,7 +14745,14 @@ int wolfSSL_sk_push(WOLFSSL_STACK* sk, const void *data)
 {
     WOLFSSL_ENTER("wolfSSL_sk_push");
 
-    return wolfSSL_sk_insert(sk, data, 0);
+    return wolfSSL_sk_insert(sk, data, -1);
+}
+
+void* wolfSSL_sk_pop(WOLFSSL_STACK* sk)
+{
+    WOLFSSL_ENTER("wolfSSL_sk_pop");
+
+    return wolfSSL_sk_pop_node(sk, -1);
 }
 
 /* return number of elements on success 0 on fail */
@@ -14921,15 +14926,100 @@ int wolfSSL_sk_insert(WOLFSSL_STACK *sk, const void *data, int idx)
     {
         /* insert node into stack. not using sk since we return sk->num after */
         WOLFSSL_STACK* prev_node = sk;
-        while (idx != 0 && prev_node->next != NULL) {
+        while (--idx != 0 && prev_node->next != NULL)
             prev_node = prev_node->next;
-            idx--;
-        }
         node->next = prev_node->next;
         prev_node->next = node;
     }
 
     return (int)sk->num;
+}
+
+void* wolfSSL_sk_pop_node(WOLFSSL_STACK* sk, int idx)
+{
+    void* ret = NULL;
+    WOLFSSL_STACK* tmp = NULL;
+
+    if (!sk)
+        return NULL;
+    if (sk->num == 0)
+        return NULL;
+
+    sk->num--;
+    if (idx == 0 || sk->next == NULL) {
+        switch (sk->type) {
+            case STACK_TYPE_CIPHER:
+                /* Can't return cipher type */
+                break;
+            case STACK_TYPE_X509:
+            case STACK_TYPE_GEN_NAME:
+            case STACK_TYPE_BIO:
+            case STACK_TYPE_OBJ:
+            case STACK_TYPE_STRING:
+            case STACK_TYPE_ACCESS_DESCRIPTION:
+            case STACK_TYPE_X509_EXT:
+            case STACK_TYPE_X509_REQ_ATTR:
+            case STACK_TYPE_NULL:
+            case STACK_TYPE_X509_NAME:
+            case STACK_TYPE_X509_NAME_ENTRY:
+            case STACK_TYPE_CONF_VALUE:
+            case STACK_TYPE_X509_INFO:
+            case STACK_TYPE_BY_DIR_entry:
+            case STACK_TYPE_BY_DIR_hash:
+            case STACK_TYPE_X509_OBJ:
+            case STACK_TYPE_DIST_POINT:
+            case STACK_TYPE_X509_CRL:
+            default:
+                ret = sk->data.generic;
+                sk->data.generic = NULL;
+                break;
+        }
+        if (sk->next) {
+            tmp = sk->next;
+            sk->next = tmp->next;
+            XMEMCPY(&sk->data, &tmp->data, sizeof(sk->data));
+            wolfSSL_sk_free_node(tmp);
+        }
+        return ret;
+    }
+
+    {
+        WOLFSSL_STACK* prev_node = sk;
+        tmp = sk->next;
+        while (--idx != 0 && tmp->next != NULL) {
+            prev_node = tmp;
+            tmp = tmp->next;
+        }
+        prev_node->next = tmp->next;
+        switch (sk->type) {
+            case STACK_TYPE_CIPHER:
+                /* Can't return cipher type */
+                break;
+            case STACK_TYPE_X509:
+            case STACK_TYPE_GEN_NAME:
+            case STACK_TYPE_BIO:
+            case STACK_TYPE_OBJ:
+            case STACK_TYPE_STRING:
+            case STACK_TYPE_ACCESS_DESCRIPTION:
+            case STACK_TYPE_X509_EXT:
+            case STACK_TYPE_X509_REQ_ATTR:
+            case STACK_TYPE_NULL:
+            case STACK_TYPE_X509_NAME:
+            case STACK_TYPE_X509_NAME_ENTRY:
+            case STACK_TYPE_CONF_VALUE:
+            case STACK_TYPE_X509_INFO:
+            case STACK_TYPE_BY_DIR_entry:
+            case STACK_TYPE_BY_DIR_hash:
+            case STACK_TYPE_X509_OBJ:
+            case STACK_TYPE_DIST_POINT:
+            case STACK_TYPE_X509_CRL:
+            default:
+                ret = tmp->data.generic;
+                break;
+        }
+        wolfSSL_sk_free_node(tmp);
+    }
+    return ret;
 }
 
 #endif /* OPENSSL_EXTRA || WOLFSSL_WPAS_SMALL */
@@ -18067,7 +18157,7 @@ void wolfSSL_sk_free(WOLFSSL_STACK* sk)
 
     while (sk != NULL) {
         WOLFSSL_STACK* next = sk->next;
-        XFREE(sk, NULL, DYNAMIC_TYPE_OPENSSL);
+        wolfSSL_sk_free_node(sk);
         sk = next;
     }
 }
@@ -18102,34 +18192,11 @@ void wolfSSL_sk_GENERIC_free(WOLFSSL_STACK* sk)
  */
 void* wolfssl_sk_pop_type(WOLFSSL_STACK* sk, WOLF_STACK_TYPE type)
 {
-    WOLFSSL_STACK* node;
     void* data = NULL;
 
     /* Check we have a stack passed in of the right type. */
-    if ((sk != NULL) && (sk->type == type)) {
-        /* Get the next node to become the new first node. */
-        node = sk->next;
-        /* Get the ASN.1 OBJECT_ID object in the first node. */
-        data = sk->data.generic;
-
-        /* Check whether there is a next node. */
-        if (node != NULL) {
-            /* Move content out of next node into current node. */
-            sk->data.obj = node->data.obj;
-            sk->next = node->next;
-            /* Dispose of node. */
-            XFREE(node, NULL, DYNAMIC_TYPE_ASN1);
-        }
-        else {
-            /* No more nodes - clear out data. */
-            sk->data.obj = NULL;
-        }
-
-        /* Decrement count as long as we thought we had nodes. */
-        if (sk->num > 0) {
-            sk->num -= 1;
-        }
-    }
+    if ((sk != NULL) && (sk->type == type))
+        data = wolfSSL_sk_pop(sk);
 
     return data;
 }
@@ -18253,7 +18320,7 @@ void wolfSSL_sk_pop_free(WOLF_STACK_OF(WOLFSSL_ASN1_OBJECT)* sk,
             if (sk->type != STACK_TYPE_CIPHER)
                 func(sk->data.generic);
         }
-        XFREE(sk, NULL, DYNAMIC_TYPE_OPENSSL);
+        XFREE(sk, sk->heap, DYNAMIC_TYPE_OPENSSL);
         sk = next;
     }
 }
@@ -21095,6 +21162,7 @@ long wolfSSL_CTX_ctrl(WOLFSSL_CTX* ctx, int cmd, long opt, void* pt)
                     WOLFSSL_MSG("Error adding certificate to context");
                     /* Decrease reference count on failure */
                     wolfSSL_X509_free(x509);
+                    x509 = NULL;
                 }
             }
         }
@@ -22929,7 +22997,7 @@ int wolfSSL_sk_WOLFSSL_STRING_num(WOLF_STACK_OF(WOLFSSL_STRING)* strings)
 void wolfSSL_get0_alpn_selected(const WOLFSSL *ssl, const unsigned char **data,
                                 unsigned int *len)
 {
-    word16 nameLen;
+    word16 nameLen = 0;
 
     if (ssl != NULL && data != NULL && len != NULL) {
         TLSX_ALPN_GetRequest(ssl->extensions, (void **)data, &nameLen);
