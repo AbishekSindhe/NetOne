@@ -47,6 +47,12 @@
     extern "C" {
 #endif
 
+#if defined(TEST_LIBWOLFSSL_SOURCES_INCLUSION_SEQUENCE) && \
+    defined(BUILDING_WOLFSSL) && !defined(LIBWOLFSSL_SOURCES_H) && \
+    !defined(LIBWOLFSSL_SOURCES_ASM_H)
+    #error settings.h included before libwolfssl_sources[_asm].h.
+#endif
+
 /* WOLFSSL_USE_OPTIONS_H directs wolfSSL to include options.h on behalf of
  * application code, rather than the application including it directly.  This is
  * not defined when compiling wolfSSL library objects, which are configured
@@ -642,7 +648,7 @@
         #define            WOLFSSL_DEBUG_ESP_HW_MOD_RSAMAX_BITS
     #endif
 
-    #if defined(CONFIG_TLS_STACK_WOLFSSL) && (CONFIG_TLS_STACK_WOLFSSL)
+    #if defined(CONFIG_TLS_STACK_WOLFSSL)
         /* When using ESP-TLS, some old algorithms such as SHA1 are no longer
          * enabled in wolfSSL, except for the OpenSSL compatibility. So enable
          * that here: */
@@ -1270,7 +1276,7 @@
             #error "https://www.wolfssl.com/docs/porting-guide/"
         #endif
     #endif
-    #define WOLFSSL_USER_IO
+
     #define HAVE_ECC
     #define NO_DH
     #define NO_SESSION_CACHE
@@ -3164,6 +3170,11 @@ extern void uITRON4_free(void *p) ;
         #define WOLFSSL_AES_DIRECT
         #endif
     #endif
+    #ifdef WOLFSSL_AES_CTS
+        #if defined(NO_AES_CBC) || !defined(HAVE_AES_CBC)
+            #error "AES CTS requires AES CBC"
+        #endif
+    #endif
 #endif
 
 #if (defined(WOLFSSL_TLS13) && defined(WOLFSSL_NO_TLS12)) || \
@@ -3607,7 +3618,14 @@ extern void uITRON4_free(void *p) ;
         #define WOLFSSL_OLD_PRIME_CHECK
     #endif
     #ifndef WOLFSSL_TEST_SUBROUTINE
-        #define WOLFSSL_TEST_SUBROUTINE static
+        #ifdef LINUXKM_LKCAPI_REGISTER
+            #define WOLFSSL_TEST_SUBROUTINE
+        #else
+            #define WOLFSSL_TEST_SUBROUTINE static
+        #endif
+    #endif
+    #ifdef LINUXKM_LKCAPI_REGISTER
+        #define WC_TEST_EXPORT_SUBTESTS
     #endif
     #undef HAVE_PTHREAD
     /* linuxkm uses linux/string.h, included by linuxkm_wc_port.h. */
@@ -3655,6 +3673,22 @@ extern void uITRON4_free(void *p) ;
     #endif
     #undef WOLFSSL_MIN_AUTH_TAG_SZ
     #define WOLFSSL_MIN_AUTH_TAG_SZ 4
+
+    #if defined(LINUXKM_LKCAPI_REGISTER) && !defined(WOLFSSL_ASN_INT_LEAD_0_ANY)
+        /* kernel 5.10 crypto manager tests key(s) that fail unless leading
+         * bytes are tolerated in GetASN_Integer().
+         */
+        #define WOLFSSL_ASN_INT_LEAD_0_ANY
+    #endif
+
+    #ifdef CONFIG_KASAN
+        #ifndef WC_SANITIZE_DISABLE
+            #define WC_SANITIZE_DISABLE() kasan_disable_current()
+        #endif
+        #ifndef WC_SANITIZE_ENABLE
+            #define WC_SANITIZE_ENABLE() kasan_enable_current()
+        #endif
+    #endif
 #endif
 
 
@@ -4402,6 +4436,11 @@ extern void uITRON4_free(void *p) ;
         #define HAVE_ENTROPY_MEMUSE
     #endif
 #endif /* HAVE_ENTROPY_MEMUSE */
+
+#if defined(NO_WOLFSSL_CLIENT) && defined(NO_WOLFSSL_SERVER) && \
+    !defined(WOLFCRYPT_ONLY) && !defined(NO_TLS)
+#error "If TLS is enabled please make sure either client or server is enabled."
+#endif
 
 #ifdef __cplusplus
     }   /* extern "C" */

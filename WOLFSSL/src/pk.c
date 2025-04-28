@@ -19,11 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1335, USA
  */
 
-#ifdef HAVE_CONFIG_H
-    #include <config.h>
-#endif
-
-#include <wolfssl/wolfcrypt/settings.h>
+#include <wolfssl/wolfcrypt/libwolfssl_sources.h>
 
 #include <wolfssl/internal.h>
 #ifndef WC_NO_RNG
@@ -735,7 +731,7 @@ static int wolfssl_print_indent(WOLFSSL_BIO* bio, char* line, int lineLen,
     if (indent > 0) {
         /* Print indent spaces. */
         int len_wanted = XSNPRINTF(line, (size_t)lineLen, "%*s", indent, " ");
-        if (len_wanted >= lineLen) {
+        if ((len_wanted < 0) || (len_wanted >= lineLen)) {
             WOLFSSL_ERROR_MSG("Buffer overflow formatting indentation");
             ret = 0;
         }
@@ -16177,6 +16173,11 @@ static int pem_write_data(const char *name, const char *header,
         *pemOut = pem;
         *pemOutLen = (word32)((size_t)p - (size_t)pem);
     }
+    else {
+        /* Dispose of any allocated memory. */
+        XFREE(pem, NULL, DYNAMIC_TYPE_TMP_BUFFER);
+        pem = NULL;
+    }
 
     return ret;
 }
@@ -16499,7 +16500,8 @@ int pkcs8_encrypt(WOLFSSL_EVP_PKEY* pkey,
 
         if (ret == 0) {
             /* Encrypt private into buffer. */
-            ret = TraditionalEnc((byte*)pkey->pkey.ptr, (word32)pkey->pkey_sz,
+            ret = TraditionalEnc((byte*)pkey->pkey.ptr + pkey->pkcs8HeaderSz,
+                (word32)pkey->pkey_sz - pkey->pkcs8HeaderSz,
                 key, keySz, passwd, passwdSz, PKCS5, PBES2, encAlgId,
                 NULL, 0, WC_PKCS12_ITT_DEFAULT, &rng, NULL);
             if (ret > 0) {
@@ -16580,8 +16582,9 @@ int pkcs8_encode(WOLFSSL_EVP_PKEY* pkey, byte* key, word32* keySz)
 
     if (ret >= 0) {
         /* Encode private key in PKCS#8 format. */
-        ret = wc_CreatePKCS8Key(key, keySz, (byte*)pkey->pkey.ptr,
-            (word32)pkey->pkey_sz, algId, curveOid, oidSz);
+        ret = wc_CreatePKCS8Key(key, keySz, (byte*)pkey->pkey.ptr +
+            pkey->pkcs8HeaderSz, (word32)pkey->pkey_sz - pkey->pkcs8HeaderSz,
+            algId, curveOid, oidSz);
     }
 
     return ret;

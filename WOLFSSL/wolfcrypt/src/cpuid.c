@@ -19,12 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1335, USA
  */
 
-
-#ifdef HAVE_CONFIG_H
-    #include <config.h>
-#endif
-
-#include <wolfssl/wolfcrypt/settings.h>
+#include <wolfssl/wolfcrypt/libwolfssl_sources.h>
 
 #include <wolfssl/wolfcrypt/cpuid.h>
 
@@ -60,7 +55,8 @@
         int got_intel_cpu = 0;
         int got_amd_cpu = 0;
         unsigned int reg[5];
-        reg[4] = '\0';
+
+        XMEMSET(reg, '\0', sizeof(reg));
         cpuid(reg, 0, 0);
 
         /* check for Intel cpu */
@@ -175,7 +171,7 @@
             if (hwcaps & HWCAP_SHA512)
                 cpuid_flags |= CPUID_SHA512;
         #endif
-        #ifndef WOLFSSL_AARCH64_NO_SQRDMLSH
+        #if defined(HWCAP_ASIMDRDM) && !defined(WOLFSSL_AARCH64_NO_SQRDMLSH)
             if (hwcaps & HWCAP_ASIMDRDM)
                 cpuid_flags |= CPUID_RDM;
         #endif
@@ -192,6 +188,7 @@
                 cpuid_flags |= CPUID_SM4;
         #endif
 
+            (void)hwcaps;
             cpuid_check = 1;
         }
     }

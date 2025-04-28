@@ -19,12 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1335, USA
  */
 
-
-#ifdef HAVE_CONFIG_H
-    #include <config.h>
-#endif
-
-#include <wolfssl/wolfcrypt/settings.h>
+#include <wolfssl/wolfcrypt/libwolfssl_sources.h>
 
 #if !defined(WOLFSSL_SSL_SESS_INCLUDED)
     #ifndef WOLFSSL_IGNORE_FILE_WARN
@@ -1457,6 +1452,7 @@ int wolfSSL_GetSessionFromCache(WOLFSSL* ssl, WOLFSSL_SESSION* output)
 #if defined(SESSION_CERTS) && defined(OPENSSL_EXTRA)
     if (peer != NULL) {
         wolfSSL_X509_free(peer);
+        peer = NULL;
     }
 #endif
 
@@ -3539,6 +3535,10 @@ int wolfSSL_SESSION_get_master_key_length(const WOLFSSL_SESSION* ses)
 #ifdef WOLFSSL_EARLY_DATA
 unsigned int wolfSSL_SESSION_get_max_early_data(const WOLFSSL_SESSION *session)
 {
+    if (session == NULL) {
+        return BAD_FUNC_ARG;
+    }
+
     return session->maxEarlyDataSz;
 }
 #endif /* WOLFSSL_EARLY_DATA */
@@ -3566,7 +3566,16 @@ void SetupSession(WOLFSSL* ssl)
     session->side = (byte)ssl->options.side;
     if (!IsAtLeastTLSv1_3(ssl->version) && ssl->arrays != NULL)
         XMEMCPY(session->masterSecret, ssl->arrays->masterSecret, SECRET_LEN);
-    session->haveEMS = ssl->options.haveEMS;
+    /* RFC8446 Appendix D.
+     *   implementations which support both TLS 1.3 and earlier versions SHOULD
+     *   indicate the use of the Extended Master Secret extension in their APIs
+     *   whenever TLS 1.3 is used.
+     * Set haveEMS so that we send the extension in subsequent connections that
+     * offer downgrades. */
+    if (IsAtLeastTLSv1_3(ssl->version))
+        session->haveEMS = 1;
+    else
+        session->haveEMS = ssl->options.haveEMS;
 #ifdef WOLFSSL_SESSION_ID_CTX
     /* If using compatibility layer then check for and copy over session context
      * id. */

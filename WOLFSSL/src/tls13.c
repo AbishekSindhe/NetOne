@@ -19,6 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1335, USA
  */
 
+#include <wolfssl/wolfcrypt/libwolfssl_sources.h>
 
 /*
  * BUILD_GCM
@@ -88,16 +89,7 @@
  *    Default behavior is to return a signed 64-bit value.
  */
 
-#ifdef HAVE_CONFIG_H
-    #include <config.h>
-#endif
-
-#include <wolfssl/wolfcrypt/settings.h>
-
-#ifdef WOLFSSL_TLS13
-#ifdef HAVE_SESSION_TICKET
-    #include <wolfssl/wolfcrypt/wc_port.h>
-#endif
+#if !defined(NO_TLS) && defined(WOLFSSL_TLS13)
 
 #ifndef WOLFCRYPT_ONLY
 
@@ -5588,6 +5580,9 @@ int DoTls13ServerHello(WOLFSSL* ssl, const byte* input, word32* inOutIdx,
                 return ret;
             ssl->options.pskNegotiated = 1;
         }
+#else
+        /* no resumption possible */
+        ssl->options.resuming = 0;
 #endif
 
         /* sanity check on PSK / KSE */
@@ -8697,6 +8692,7 @@ static int SendTls13Certificate(WOLFSSL* ssl)
                 ssl->options.sendVerify = SEND_CERT;
             }
             wolfSSL_X509_free(x509);
+            x509 = NULL;
             wolfSSL_EVP_PKEY_free(pkey);
         }
     }
@@ -15085,4 +15081,4 @@ int tls13ShowSecrets(WOLFSSL* ssl, int id, const unsigned char* secret,
 
 #endif /* !WOLFCRYPT_ONLY */
 
-#endif /* WOLFSSL_TLS13 */
+#endif /* !NO_TLS && WOLFSSL_TLS13 */

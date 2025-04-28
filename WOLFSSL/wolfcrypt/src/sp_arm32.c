@@ -21,16 +21,11 @@
 
 /* Implementation by Sean Parkinson. */
 
-#ifdef HAVE_CONFIG_H
-    #include <config.h>
-#endif
-
-#include <wolfssl/wolfcrypt/settings.h>
+#include <wolfssl/wolfcrypt/libwolfssl_sources.h>
 
 #if defined(WOLFSSL_HAVE_SP_RSA) || defined(WOLFSSL_HAVE_SP_DH) || \
     defined(WOLFSSL_HAVE_SP_ECC)
 
-#include <wolfssl/wolfcrypt/error-crypt.h>
 #include <wolfssl/wolfcrypt/cpuid.h>
 #ifdef NO_INLINE
     #include <wolfssl/wolfcrypt/misc.h>
@@ -114,9 +109,9 @@ static void sp_2048_from_bin(sp_digit* r, int size, const byte* a, int n)
         }
 #else
         switch (i) {
-            case 2: d[2] = a[2]; //fallthrough
-            case 1: d[1] = a[1]; //fallthrough
-            case 0: d[0] = a[0]; //fallthrough
+            case 2: d[i-2] = a[2]; //fallthrough
+            case 1: d[i-1] = a[1]; //fallthrough
+            case 0: d[i-0] = a[0]; //fallthrough
         }
 #endif
         j++;
@@ -256,11 +251,18 @@ static void sp_2048_to_bin_64(sp_digit* r, byte* a)
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static void sp_2048_mul_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static void sp_2048_mul_8(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static void sp_2048_mul_8(sp_digit* r, const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #32\n\t"
@@ -2238,8 +2240,13 @@ static void sp_2048_mul_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_
         "stm	%[r]!, {r3, r4, r5, r6}\n\t"
         "ldm	sp!, {r3, r4, r5, r6}\n\t"
         "stm	%[r]!, {r3, r4, r5, r6}\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r11",
             "r12"
     );
@@ -2252,11 +2259,18 @@ static void sp_2048_mul_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static void sp_2048_mul_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static void sp_2048_mul_8(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static void sp_2048_mul_8(sp_digit* r, const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #36\n\t"
@@ -2592,8 +2606,13 @@ static void sp_2048_mul_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_
         "sub	%[r], %[r], #32\n\t"
         "stm	%[r], {r3, r4, r5, r6, r7, r8, r9, r10}\n\t"
         "add	sp, sp, #36\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
             "r11", "r12", "lr"
     );
@@ -2606,11 +2625,18 @@ static void sp_2048_mul_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static void sp_2048_mul_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static void sp_2048_mul_8(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static void sp_2048_mul_8(sp_digit* r, const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #44\n\t"
@@ -2724,8 +2750,13 @@ static void sp_2048_mul_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_
         "ldm	sp, {r3, r4, r5, r6, r7, r8, r9, r10}\n\t"
         "stm	lr, {r3, r4, r5, r6, r7, r8, r9, r10}\n\t"
         "add	sp, sp, #44\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r10", "r11", "r12", "r7",
             "r8", "r9", "lr"
     );
@@ -2738,11 +2769,18 @@ static void sp_2048_mul_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_2048_add_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_2048_add_8(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_2048_add_8(sp_digit* r, const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a]!, {r3, r4, r5, r6}\n\t"
@@ -2761,8 +2799,13 @@ static sp_digit sp_2048_add_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit
         "stm	%[r]!, {r3, r4, r5, r6}\n\t"
         "mov	%[r], #0\n\t"
         "adc	%[r], %[r], #0\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10"
     );
     return (word32)(size_t)r;
@@ -2773,10 +2816,16 @@ static sp_digit sp_2048_add_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit
  * a  A single precision integer and result.
  * b  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_2048_sub_in_place_16(sp_digit* a_p, const sp_digit* b_p)
+#else
+static sp_digit sp_2048_sub_in_place_16(sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* b asm ("r1") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a], {r2, r3, r4, r5}\n\t"
@@ -2808,8 +2857,13 @@ static sp_digit sp_2048_sub_in_place_16(sp_digit* a_p, const sp_digit* b_p)
         "sbcs	r5, r5, r9\n\t"
         "stm	%[a]!, {r2, r3, r4, r5}\n\t"
         "sbc	%[a], r9, r9\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9"
     );
     return (word32)(size_t)a;
@@ -2821,11 +2875,19 @@ static sp_digit sp_2048_sub_in_place_16(sp_digit* a_p, const sp_digit* b_p)
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_2048_add_16(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_2048_add_16(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_2048_add_16(sp_digit* r, const sp_digit* a,
+    const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a]!, {r3, r4, r5, r6}\n\t"
@@ -2858,8 +2920,13 @@ static sp_digit sp_2048_add_16(sp_digit* r_p, const sp_digit* a_p, const sp_digi
         "stm	%[r]!, {r3, r4, r5, r6}\n\t"
         "mov	%[r], #0\n\t"
         "adc	%[r], %[r], #0\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10"
     );
     return (word32)(size_t)r;
@@ -2935,10 +3002,16 @@ SP_NOINLINE static void sp_2048_mul_16(sp_digit* r, const sp_digit* a,
  * a  A single precision integer and result.
  * b  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_2048_sub_in_place_32(sp_digit* a_p, const sp_digit* b_p)
+#else
+static sp_digit sp_2048_sub_in_place_32(sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* b asm ("r1") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a], {r2, r3, r4, r5}\n\t"
@@ -2998,8 +3071,13 @@ static sp_digit sp_2048_sub_in_place_32(sp_digit* a_p, const sp_digit* b_p)
         "sbcs	r5, r5, r9\n\t"
         "stm	%[a]!, {r2, r3, r4, r5}\n\t"
         "sbc	%[a], r9, r9\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9"
     );
     return (word32)(size_t)a;
@@ -3011,11 +3089,19 @@ static sp_digit sp_2048_sub_in_place_32(sp_digit* a_p, const sp_digit* b_p)
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_2048_add_32(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_2048_add_32(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_2048_add_32(sp_digit* r, const sp_digit* a,
+    const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a]!, {r3, r4, r5, r6}\n\t"
@@ -3076,8 +3162,13 @@ static sp_digit sp_2048_add_32(sp_digit* r_p, const sp_digit* a_p, const sp_digi
         "stm	%[r]!, {r3, r4, r5, r6}\n\t"
         "mov	%[r], #0\n\t"
         "adc	%[r], %[r], #0\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10"
     );
     return (word32)(size_t)r;
@@ -3157,10 +3248,16 @@ SP_NOINLINE static void sp_2048_mul_32(sp_digit* r, const sp_digit* a,
  * a  A single precision integer and result.
  * b  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_2048_sub_in_place_64(sp_digit* a_p, const sp_digit* b_p)
+#else
+static sp_digit sp_2048_sub_in_place_64(sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* b asm ("r1") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a], {r2, r3, r4, r5}\n\t"
@@ -3276,8 +3373,13 @@ static sp_digit sp_2048_sub_in_place_64(sp_digit* a_p, const sp_digit* b_p)
         "sbcs	r5, r5, r9\n\t"
         "stm	%[a]!, {r2, r3, r4, r5}\n\t"
         "sbc	%[a], r9, r9\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9"
     );
     return (word32)(size_t)a;
@@ -3289,11 +3391,19 @@ static sp_digit sp_2048_sub_in_place_64(sp_digit* a_p, const sp_digit* b_p)
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_2048_add_64(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_2048_add_64(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_2048_add_64(sp_digit* r, const sp_digit* a,
+    const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a]!, {r3, r4, r5, r6}\n\t"
@@ -3410,8 +3520,13 @@ static sp_digit sp_2048_add_64(sp_digit* r_p, const sp_digit* a_p, const sp_digi
         "stm	%[r]!, {r3, r4, r5, r6}\n\t"
         "mov	%[r], #0\n\t"
         "adc	%[r], %[r], #0\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10"
     );
     return (word32)(size_t)r;
@@ -3492,10 +3607,16 @@ SP_NOINLINE static void sp_2048_mul_64(sp_digit* r, const sp_digit* a,
  * r  A single precision integer.
  * a  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_2048_sqr_8(sp_digit* r_p, const sp_digit* a_p)
+#else
+static void sp_2048_sqr_8(sp_digit* r, const sp_digit* a)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #32\n\t"
@@ -4690,8 +4811,13 @@ static void sp_2048_sqr_8(sp_digit* r_p, const sp_digit* a_p)
         "stm	%[r]!, {r2, r3, r4, r8}\n\t"
         "ldm	sp!, {r2, r3, r4, r8}\n\t"
         "stm	%[r]!, {r2, r3, r4, r8}\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
             "r12"
     );
@@ -4703,10 +4829,16 @@ static void sp_2048_sqr_8(sp_digit* r_p, const sp_digit* a_p)
  * r  A single precision integer.
  * a  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_2048_sqr_8(sp_digit* r_p, const sp_digit* a_p)
+#else
+static void sp_2048_sqr_8(sp_digit* r, const sp_digit* a)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #0x44\n\t"
@@ -4934,8 +5066,13 @@ static void sp_2048_sqr_8(sp_digit* r_p, const sp_digit* a_p)
         "sub	%[r], %[r], #32\n\t"
         "stm	%[r], {r3, r4, r5, r6, r7, r8, r9, r10}\n\t"
         "add	sp, sp, #0x44\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
             "r11", "r12", "lr"
     );
@@ -4947,10 +5084,16 @@ static void sp_2048_sqr_8(sp_digit* r_p, const sp_digit* a_p)
  * r  A single precision integer.
  * a  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_2048_sqr_8(sp_digit* r_p, const sp_digit* a_p)
+#else
+static void sp_2048_sqr_8(sp_digit* r, const sp_digit* a)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #32\n\t"
@@ -5051,8 +5194,13 @@ static void sp_2048_sqr_8(sp_digit* r_p, const sp_digit* a_p)
         "ldm	sp, {r0, r1, r2, r3, r4, r5, r6}\n\t"
         "stm	lr, {r0, r1, r2, r3, r4, r5, r6}\n\t"
         "add	sp, sp, #32\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
             "r11", "r12", "lr"
     );
@@ -5065,11 +5213,18 @@ static void sp_2048_sqr_8(sp_digit* r_p, const sp_digit* a_p)
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_2048_sub_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_2048_sub_8(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_2048_sub_8(sp_digit* r, const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a]!, {r3, r4, r5, r6}\n\t"
@@ -5087,8 +5242,13 @@ static sp_digit sp_2048_sub_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit
         "sbcs	r6, r6, r10\n\t"
         "stm	%[r]!, {r3, r4, r5, r6}\n\t"
         "sbc	%[r], r6, r6\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10"
     );
     return (word32)(size_t)r;
@@ -5136,11 +5296,19 @@ SP_NOINLINE static void sp_2048_sqr_16(sp_digit* r, const sp_digit* a)
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_2048_sub_16(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_2048_sub_16(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_2048_sub_16(sp_digit* r, const sp_digit* a,
+    const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a]!, {r3, r4, r5, r6}\n\t"
@@ -5172,8 +5340,13 @@ static sp_digit sp_2048_sub_16(sp_digit* r_p, const sp_digit* a_p, const sp_digi
         "sbcs	r6, r6, r10\n\t"
         "stm	%[r]!, {r3, r4, r5, r6}\n\t"
         "sbc	%[r], r6, r6\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10"
     );
     return (word32)(size_t)r;
@@ -5221,11 +5394,19 @@ SP_NOINLINE static void sp_2048_sqr_32(sp_digit* r, const sp_digit* a)
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_2048_sub_32(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_2048_sub_32(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_2048_sub_32(sp_digit* r, const sp_digit* a,
+    const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a]!, {r3, r4, r5, r6}\n\t"
@@ -5285,8 +5466,13 @@ static sp_digit sp_2048_sub_32(sp_digit* r_p, const sp_digit* a_p, const sp_digi
         "sbcs	r6, r6, r10\n\t"
         "stm	%[r]!, {r3, r4, r5, r6}\n\t"
         "sbc	%[r], r6, r6\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10"
     );
     return (word32)(size_t)r;
@@ -5336,11 +5522,19 @@ SP_NOINLINE static void sp_2048_sqr_64(sp_digit* r, const sp_digit* a)
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_2048_add_64(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_2048_add_64(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_2048_add_64(sp_digit* r, const sp_digit* a,
+    const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r3, #0\n\t"
@@ -5360,8 +5554,13 @@ static sp_digit sp_2048_add_64(sp_digit* r_p, const sp_digit* a_p, const sp_digi
         "cmp	%[a], r12\n\t"
         "bne	L_sp_2048_add_64_word_%=\n\t"
         "mov	%[r], r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11",
             "r3", "r12"
     );
@@ -5375,10 +5574,16 @@ static sp_digit sp_2048_add_64(sp_digit* r_p, const sp_digit* a_p, const sp_digi
  * a  A single precision integer.
  * b  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_2048_sub_in_place_64(sp_digit* a_p, const sp_digit* b_p)
+#else
+static sp_digit sp_2048_sub_in_place_64(sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* b asm ("r1") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r12, #0\n\t"
@@ -5397,8 +5602,13 @@ static sp_digit sp_2048_sub_in_place_64(sp_digit* a_p, const sp_digit* b_p)
         "cmp	%[a], lr\n\t"
         "bne	L_sp_2048_sub_in_pkace_64_word_%=\n\t"
         "mov	%[a], r12\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r12",
             "lr"
     );
@@ -5413,11 +5623,18 @@ static sp_digit sp_2048_sub_in_place_64(sp_digit* a_p, const sp_digit* b_p)
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static void sp_2048_mul_64(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static void sp_2048_mul_64(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static void sp_2048_mul_64(sp_digit* r, const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #0x200\n\t"
@@ -5600,8 +5817,13 @@ static void sp_2048_mul_64(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b
         "stm	%[r]!, {r3, r4, r6, r7, r8, r9, r10, r11}\n\t"
         "subs	r5, r5, #32\n\t"
         "bgt	L_sp_2048_mul_64_store_%=\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "lr",
             "r11"
     );
@@ -5612,10 +5834,16 @@ static void sp_2048_mul_64(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b
  * r  A single precision integer.
  * a  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_2048_sqr_64(sp_digit* r_p, const sp_digit* a_p)
+#else
+static void sp_2048_sqr_64(sp_digit* r, const sp_digit* a)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #0x200\n\t"
@@ -5758,8 +5986,13 @@ static void sp_2048_sqr_64(sp_digit* r_p, const sp_digit* a_p)
         "stm	%[r]!, {r3, r4, r6, r7, r8, r9, r10, r11}\n\t"
         "subs	r5, r5, #32\n\t"
         "bgt	L_sp_2048_sqr_64_store_%=\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "lr",
             "r11"
     );
@@ -5791,11 +6024,19 @@ static void sp_2048_mask_32(sp_digit* r, const sp_digit* a, sp_digit m)
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_2048_add_32(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_2048_add_32(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_2048_add_32(sp_digit* r, const sp_digit* a,
+    const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r3, #0\n\t"
@@ -5815,8 +6056,13 @@ static sp_digit sp_2048_add_32(sp_digit* r_p, const sp_digit* a_p, const sp_digi
         "cmp	%[a], r12\n\t"
         "bne	L_sp_2048_add_32_word_%=\n\t"
         "mov	%[r], r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11",
             "r3", "r12"
     );
@@ -5830,10 +6076,16 @@ static sp_digit sp_2048_add_32(sp_digit* r_p, const sp_digit* a_p, const sp_digi
  * a  A single precision integer.
  * b  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_2048_sub_in_place_32(sp_digit* a_p, const sp_digit* b_p)
+#else
+static sp_digit sp_2048_sub_in_place_32(sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* b asm ("r1") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r12, #0\n\t"
@@ -5852,8 +6104,13 @@ static sp_digit sp_2048_sub_in_place_32(sp_digit* a_p, const sp_digit* b_p)
         "cmp	%[a], lr\n\t"
         "bne	L_sp_2048_sub_in_pkace_32_word_%=\n\t"
         "mov	%[a], r12\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r12",
             "lr"
     );
@@ -5868,11 +6125,18 @@ static sp_digit sp_2048_sub_in_place_32(sp_digit* a_p, const sp_digit* b_p)
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static void sp_2048_mul_32(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static void sp_2048_mul_32(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static void sp_2048_mul_32(sp_digit* r, const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #0x100\n\t"
@@ -6055,8 +6319,13 @@ static void sp_2048_mul_32(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b
         "stm	%[r]!, {r3, r4, r6, r7, r8, r9, r10, r11}\n\t"
         "subs	r5, r5, #32\n\t"
         "bgt	L_sp_2048_mul_32_store_%=\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "lr",
             "r11"
     );
@@ -6067,10 +6336,16 @@ static void sp_2048_mul_32(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b
  * r  A single precision integer.
  * a  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_2048_sqr_32(sp_digit* r_p, const sp_digit* a_p)
+#else
+static void sp_2048_sqr_32(sp_digit* r, const sp_digit* a)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #0x100\n\t"
@@ -6213,8 +6488,13 @@ static void sp_2048_sqr_32(sp_digit* r_p, const sp_digit* a_p)
         "stm	%[r]!, {r3, r4, r6, r7, r8, r9, r10, r11}\n\t"
         "subs	r5, r5, #32\n\t"
         "bgt	L_sp_2048_sqr_32_store_%=\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "lr",
             "r11"
     );
@@ -6250,11 +6530,17 @@ static void sp_2048_mont_setup(const sp_digit* a, sp_digit* rho)
  * a  A single precision integer.
  * b  A single precision digit.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_2048_mul_d_64(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
+#else
+static void sp_2048_mul_d_64(sp_digit* r, const sp_digit* a, sp_digit b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register sp_digit b asm ("r2") = (sp_digit)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         /* A[0] * B */
@@ -6335,8 +6621,13 @@ static void sp_2048_mul_d_64(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
         "cmp	r9, #0x100\n\t"
         "blt	L_sp_2048_mul_d_64_word_%=\n\t"
         "str	r3, [%[r], #256]\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9"
     );
 }
@@ -6348,11 +6639,17 @@ static void sp_2048_mul_d_64(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
  * a  A single precision integer.
  * b  A single precision digit.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_2048_mul_d_64(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
+#else
+static void sp_2048_mul_d_64(sp_digit* r, const sp_digit* a, sp_digit b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register sp_digit b asm ("r2") = (sp_digit)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         /* A[0] * B */
@@ -8400,8 +8697,13 @@ static void sp_2048_mul_d_64(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
 #endif
         "stm	%[r]!, {r3}\n\t"
         "str	r4, [%[r]]\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8"
     );
 }
@@ -8431,13 +8733,20 @@ static void sp_2048_mont_norm_32(sp_digit* r, const sp_digit* m)
  * b  A single precision number to subtract.
  * m  Mask value to apply.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_2048_cond_sub_32(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* b_p, sp_digit m_p)
+#else
+static sp_digit sp_2048_cond_sub_32(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, sp_digit m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
     register sp_digit m asm ("r3") = (sp_digit)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r6, #0\n\t"
@@ -8456,8 +8765,13 @@ static sp_digit sp_2048_cond_sub_32(sp_digit* r_p, const sp_digit* a_p,
         "cmp	lr, #0x80\n\t"
         "blt	L_sp_2048_cond_sub_32_words_%=\n\t"
         "mov	%[r], r12\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b), [m] "+r" (m)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b), [m] "r" (m)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r12", "lr", "r4", "r5", "r6"
     );
     return (word32)(size_t)r;
@@ -8472,13 +8786,20 @@ static sp_digit sp_2048_cond_sub_32(sp_digit* r_p, const sp_digit* a_p,
  * b  A single precision number to subtract.
  * m  Mask value to apply.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_2048_cond_sub_32(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* b_p, sp_digit m_p)
+#else
+static sp_digit sp_2048_cond_sub_32(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, sp_digit m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
     register sp_digit m asm ("r3") = (sp_digit)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	lr, #0\n\t"
@@ -8595,8 +8916,13 @@ static sp_digit sp_2048_cond_sub_32(sp_digit* r_p, const sp_digit* a_p,
         "sbcs	r5, r5, r7\n\t"
         "stm	%[r]!, {r4, r5}\n\t"
         "sbc	%[r], lr, lr\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b), [m] "+r" (m)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b), [m] "r" (m)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r12", "lr", "r4", "r5", "r6", "r7"
     );
     return (word32)(size_t)r;
@@ -8610,11 +8936,19 @@ static sp_digit sp_2048_cond_sub_32(sp_digit* r_p, const sp_digit* a_p,
  * m   The single precision number representing the modulus.
  * mp  The digit representing the negative inverse of m mod 2^n.
  */
-static SP_NOINLINE void sp_2048_mont_reduce_32(sp_digit* a_p, const sp_digit* m_p, sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_2048_mont_reduce_32(sp_digit* a_p,
+    const sp_digit* m_p, sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_2048_mont_reduce_32(sp_digit* a, const sp_digit* m,
+    sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* m asm ("r1") = (const sp_digit*)m_p;
     register sp_digit mp asm ("r2") = (sp_digit)mp_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
 #if !(defined(WOLFSSL_ARM_ARCH) && (WOLFSSL_ARM_ARCH < 4))
@@ -9576,8 +9910,13 @@ static SP_NOINLINE void sp_2048_mont_reduce_32(sp_digit* a_p, const sp_digit* m_
         "str	r12, [%[a]]\n\t"
         "str	lr, [%[a], #4]\n\t"
         "mov	%[mp], r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [m] "+r" (m), [mp] "+r" (mp)
         :
+#else
+        :
+        : [a] "r" (a), [m] "r" (m), [mp] "r" (mp)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8", "r9",
             "r10", "r11"
     );
@@ -9591,11 +9930,19 @@ static SP_NOINLINE void sp_2048_mont_reduce_32(sp_digit* a_p, const sp_digit* m_
  * m   The single precision number representing the modulus.
  * mp  The digit representing the negative inverse of m mod 2^n.
  */
-static SP_NOINLINE void sp_2048_mont_reduce_32(sp_digit* a_p, const sp_digit* m_p, sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_2048_mont_reduce_32(sp_digit* a_p,
+    const sp_digit* m_p, sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_2048_mont_reduce_32(sp_digit* a, const sp_digit* m,
+    sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* m asm ("r1") = (const sp_digit*)m_p;
     register sp_digit mp asm ("r2") = (sp_digit)mp_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldr	r11, [%[m]]\n\t"
@@ -9872,8 +10219,13 @@ static SP_NOINLINE void sp_2048_mont_reduce_32(sp_digit* a_p, const sp_digit* m_
         "str	r12, [%[a]]\n\t"
         "str	lr, [%[a], #4]\n\t"
         "mov	%[mp], r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [m] "+r" (m), [mp] "+r" (mp)
         :
+#else
+        :
+        : [a] "r" (a), [m] "r" (m), [mp] "r" (mp)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8", "r9",
             "r10", "r11"
     );
@@ -9887,11 +10239,19 @@ static SP_NOINLINE void sp_2048_mont_reduce_32(sp_digit* a_p, const sp_digit* m_
  * m   The single precision number representing the modulus.
  * mp  The digit representing the negative inverse of m mod 2^n.
  */
-static SP_NOINLINE void sp_2048_mont_reduce_32(sp_digit* a_p, const sp_digit* m_p, sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_2048_mont_reduce_32(sp_digit* a_p,
+    const sp_digit* m_p, sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_2048_mont_reduce_32(sp_digit* a, const sp_digit* m,
+    sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* m asm ("r1") = (const sp_digit*)m_p;
     register sp_digit mp asm ("r2") = (sp_digit)mp_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         /* i = 0 */
@@ -10078,8 +10438,13 @@ static SP_NOINLINE void sp_2048_mont_reduce_32(sp_digit* a_p, const sp_digit* m_
         "str	r7, [%[a], #12]\n\t"
         "str	r8, [%[a], #16]\n\t"
         "mov	%[mp], lr\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [m] "+r" (m), [mp] "+r" (mp)
         :
+#else
+        :
+        : [a] "r" (a), [m] "r" (m), [mp] "r" (mp)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8", "r9",
             "r10", "r11"
     );
@@ -10124,11 +10489,17 @@ SP_NOINLINE static void sp_2048_mont_sqr_32(sp_digit* r, const sp_digit* a,
  * a  A single precision integer.
  * b  A single precision digit.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_2048_mul_d_32(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
+#else
+static void sp_2048_mul_d_32(sp_digit* r, const sp_digit* a, sp_digit b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register sp_digit b asm ("r2") = (sp_digit)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         /* A[0] * B */
@@ -10209,8 +10580,13 @@ static void sp_2048_mul_d_32(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
         "cmp	r9, #0x80\n\t"
         "blt	L_sp_2048_mul_d_32_word_%=\n\t"
         "str	r3, [%[r], #128]\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9"
     );
 }
@@ -10222,11 +10598,17 @@ static void sp_2048_mul_d_32(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
  * a  A single precision integer.
  * b  A single precision digit.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_2048_mul_d_32(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
+#else
+static void sp_2048_mul_d_32(sp_digit* r, const sp_digit* a, sp_digit b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register sp_digit b asm ("r2") = (sp_digit)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         /* A[0] * B */
@@ -11250,8 +11632,13 @@ static void sp_2048_mul_d_32(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
 #endif
         "stm	%[r]!, {r4}\n\t"
         "str	r5, [%[r]]\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8"
     );
 }
@@ -11267,11 +11654,17 @@ static void sp_2048_mul_d_32(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
  *
  * Note that this is an approximate div. It may give an answer 1 larger.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit div_2048_word_32(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
+#else
+static sp_digit div_2048_word_32(sp_digit d1, sp_digit d0, sp_digit div)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit d1 asm ("r0") = (sp_digit)d1_p;
     register sp_digit d0 asm ("r1") = (sp_digit)d0_p;
     register sp_digit div asm ("r2") = (sp_digit)div_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "lsr	r6, %[div], #16\n\t"
@@ -11309,8 +11702,13 @@ static sp_digit div_2048_word_32(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
         "sub	%[d0], %[d0], r3\n\t"
         "udiv	r3, %[d0], %[div]\n\t"
         "add	%[d1], r4, r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [d1] "+r" (d1), [d0] "+r" (d0), [div] "+r" (div)
         :
+#else
+        :
+        : [d1] "r" (d1), [d0] "r" (d0), [div] "r" (div)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8"
     );
     return (word32)(size_t)d1;
@@ -11326,11 +11724,17 @@ static sp_digit div_2048_word_32(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
  *
  * Note that this is an approximate div. It may give an answer 1 larger.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit div_2048_word_32(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
+#else
+static sp_digit div_2048_word_32(sp_digit d1, sp_digit d0, sp_digit div)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit d1 asm ("r0") = (sp_digit)d1_p;
     register sp_digit d0 asm ("r1") = (sp_digit)d0_p;
     register sp_digit div asm ("r2") = (sp_digit)div_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "lsr	lr, %[div], #1\n\t"
@@ -11447,8 +11851,13 @@ static sp_digit div_2048_word_32(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
         "subs	r6, %[div], r7\n\t"
         "sbc	r6, r6, r6\n\t"
         "sub	%[d1], r3, r6\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [d1] "+r" (d1), [d0] "+r" (d0), [div] "+r" (div)
         :
+#else
+        :
+        : [d1] "r" (d1), [d0] "r" (d0), [div] "r" (div)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8"
     );
     return (word32)(size_t)d1;
@@ -11462,10 +11871,16 @@ static sp_digit div_2048_word_32(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
  * return -ve, 0 or +ve if a is less than, equal to or greater than b
  * respectively.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_int32 sp_2048_cmp_32(const sp_digit* a_p, const sp_digit* b_p)
+#else
+static sp_int32 sp_2048_cmp_32(const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register const sp_digit* a asm ("r0") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r1") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r2, #-1\n\t"
@@ -11846,8 +12261,13 @@ static sp_int32 sp_2048_cmp_32(const sp_digit* a_p, const sp_digit* b_p)
         "eor	r2, r2, r3\n\t"
 #endif /*WOLFSSL_SP_SMALL */
         "mov	%[a], r2\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r12", "lr", "r4", "r5", "r6"
     );
     return (word32)(size_t)a;
@@ -12257,13 +12677,20 @@ static void sp_2048_mont_norm_64(sp_digit* r, const sp_digit* m)
  * b  A single precision number to subtract.
  * m  Mask value to apply.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_2048_cond_sub_64(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* b_p, sp_digit m_p)
+#else
+static sp_digit sp_2048_cond_sub_64(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, sp_digit m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
     register sp_digit m asm ("r3") = (sp_digit)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r6, #0\n\t"
@@ -12282,8 +12709,13 @@ static sp_digit sp_2048_cond_sub_64(sp_digit* r_p, const sp_digit* a_p,
         "cmp	lr, #0x100\n\t"
         "blt	L_sp_2048_cond_sub_64_words_%=\n\t"
         "mov	%[r], r12\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b), [m] "+r" (m)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b), [m] "r" (m)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r12", "lr", "r4", "r5", "r6"
     );
     return (word32)(size_t)r;
@@ -12298,13 +12730,20 @@ static sp_digit sp_2048_cond_sub_64(sp_digit* r_p, const sp_digit* a_p,
  * b  A single precision number to subtract.
  * m  Mask value to apply.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_2048_cond_sub_64(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* b_p, sp_digit m_p)
+#else
+static sp_digit sp_2048_cond_sub_64(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, sp_digit m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
     register sp_digit m asm ("r3") = (sp_digit)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	lr, #0\n\t"
@@ -12533,8 +12972,13 @@ static sp_digit sp_2048_cond_sub_64(sp_digit* r_p, const sp_digit* a_p,
         "sbcs	r5, r5, r7\n\t"
         "stm	%[r]!, {r4, r5}\n\t"
         "sbc	%[r], lr, lr\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b), [m] "+r" (m)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b), [m] "r" (m)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r12", "lr", "r4", "r5", "r6", "r7"
     );
     return (word32)(size_t)r;
@@ -12548,11 +12992,19 @@ static sp_digit sp_2048_cond_sub_64(sp_digit* r_p, const sp_digit* a_p,
  * m   The single precision number representing the modulus.
  * mp  The digit representing the negative inverse of m mod 2^n.
  */
-static SP_NOINLINE void sp_2048_mont_reduce_64(sp_digit* a_p, const sp_digit* m_p, sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_2048_mont_reduce_64(sp_digit* a_p,
+    const sp_digit* m_p, sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_2048_mont_reduce_64(sp_digit* a, const sp_digit* m,
+    sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* m asm ("r1") = (const sp_digit*)m_p;
     register sp_digit mp asm ("r2") = (sp_digit)mp_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
 #if !(defined(WOLFSSL_ARM_ARCH) && (WOLFSSL_ARM_ARCH < 4))
@@ -14442,8 +14894,13 @@ static SP_NOINLINE void sp_2048_mont_reduce_64(sp_digit* a_p, const sp_digit* m_
         "str	r12, [%[a]]\n\t"
         "str	lr, [%[a], #4]\n\t"
         "mov	%[mp], r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [m] "+r" (m), [mp] "+r" (mp)
         :
+#else
+        :
+        : [a] "r" (a), [m] "r" (m), [mp] "r" (mp)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8", "r9",
             "r10", "r11"
     );
@@ -14457,11 +14914,19 @@ static SP_NOINLINE void sp_2048_mont_reduce_64(sp_digit* a_p, const sp_digit* m_
  * m   The single precision number representing the modulus.
  * mp  The digit representing the negative inverse of m mod 2^n.
  */
-static SP_NOINLINE void sp_2048_mont_reduce_64(sp_digit* a_p, const sp_digit* m_p, sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_2048_mont_reduce_64(sp_digit* a_p,
+    const sp_digit* m_p, sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_2048_mont_reduce_64(sp_digit* a, const sp_digit* m,
+    sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* m asm ("r1") = (const sp_digit*)m_p;
     register sp_digit mp asm ("r2") = (sp_digit)mp_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldr	r11, [%[m]]\n\t"
@@ -14994,8 +15459,13 @@ static SP_NOINLINE void sp_2048_mont_reduce_64(sp_digit* a_p, const sp_digit* m_
         "str	r12, [%[a]]\n\t"
         "str	lr, [%[a], #4]\n\t"
         "mov	%[mp], r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [m] "+r" (m), [mp] "+r" (mp)
         :
+#else
+        :
+        : [a] "r" (a), [m] "r" (m), [mp] "r" (mp)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8", "r9",
             "r10", "r11"
     );
@@ -15009,11 +15479,19 @@ static SP_NOINLINE void sp_2048_mont_reduce_64(sp_digit* a_p, const sp_digit* m_
  * m   The single precision number representing the modulus.
  * mp  The digit representing the negative inverse of m mod 2^n.
  */
-static SP_NOINLINE void sp_2048_mont_reduce_64(sp_digit* a_p, const sp_digit* m_p, sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_2048_mont_reduce_64(sp_digit* a_p,
+    const sp_digit* m_p, sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_2048_mont_reduce_64(sp_digit* a, const sp_digit* m,
+    sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* m asm ("r1") = (const sp_digit*)m_p;
     register sp_digit mp asm ("r2") = (sp_digit)mp_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         /* i = 0 */
@@ -15360,8 +15838,13 @@ static SP_NOINLINE void sp_2048_mont_reduce_64(sp_digit* a_p, const sp_digit* m_
         "str	r7, [%[a], #12]\n\t"
         "str	r8, [%[a], #16]\n\t"
         "mov	%[mp], lr\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [m] "+r" (m), [mp] "+r" (mp)
         :
+#else
+        :
+        : [a] "r" (a), [m] "r" (m), [mp] "r" (mp)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8", "r9",
             "r10", "r11"
     );
@@ -15406,11 +15889,19 @@ SP_NOINLINE static void sp_2048_mont_sqr_64(sp_digit* r, const sp_digit* a,
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_2048_sub_64(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_2048_sub_64(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_2048_sub_64(sp_digit* r, const sp_digit* a,
+    const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r12, #0\n\t"
@@ -15429,8 +15920,13 @@ static sp_digit sp_2048_sub_64(sp_digit* r_p, const sp_digit* a_p, const sp_digi
         "cmp	%[a], lr\n\t"
         "bne	L_sp_2048_sub_64_word_%=\n\t"
         "mov	%[r], r12\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
             "r12", "lr"
     );
@@ -15444,11 +15940,19 @@ static sp_digit sp_2048_sub_64(sp_digit* r_p, const sp_digit* a_p, const sp_digi
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_2048_sub_64(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_2048_sub_64(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_2048_sub_64(sp_digit* r, const sp_digit* a,
+    const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a]!, {r3, r4, r5, r6}\n\t"
@@ -15564,8 +16068,13 @@ static sp_digit sp_2048_sub_64(sp_digit* r_p, const sp_digit* a_p, const sp_digi
         "sbcs	r6, r6, r10\n\t"
         "stm	%[r]!, {r3, r4, r5, r6}\n\t"
         "sbc	%[r], r6, r6\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10"
     );
     return (word32)(size_t)r;
@@ -15582,11 +16091,17 @@ static sp_digit sp_2048_sub_64(sp_digit* r_p, const sp_digit* a_p, const sp_digi
  *
  * Note that this is an approximate div. It may give an answer 1 larger.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit div_2048_word_64(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
+#else
+static sp_digit div_2048_word_64(sp_digit d1, sp_digit d0, sp_digit div)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit d1 asm ("r0") = (sp_digit)d1_p;
     register sp_digit d0 asm ("r1") = (sp_digit)d0_p;
     register sp_digit div asm ("r2") = (sp_digit)div_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "lsr	r6, %[div], #16\n\t"
@@ -15624,8 +16139,13 @@ static sp_digit div_2048_word_64(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
         "sub	%[d0], %[d0], r3\n\t"
         "udiv	r3, %[d0], %[div]\n\t"
         "add	%[d1], r4, r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [d1] "+r" (d1), [d0] "+r" (d0), [div] "+r" (div)
         :
+#else
+        :
+        : [d1] "r" (d1), [d0] "r" (d0), [div] "r" (div)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8"
     );
     return (word32)(size_t)d1;
@@ -15641,11 +16161,17 @@ static sp_digit div_2048_word_64(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
  *
  * Note that this is an approximate div. It may give an answer 1 larger.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit div_2048_word_64(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
+#else
+static sp_digit div_2048_word_64(sp_digit d1, sp_digit d0, sp_digit div)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit d1 asm ("r0") = (sp_digit)d1_p;
     register sp_digit d0 asm ("r1") = (sp_digit)d0_p;
     register sp_digit div asm ("r2") = (sp_digit)div_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "lsr	lr, %[div], #1\n\t"
@@ -15762,8 +16288,13 @@ static sp_digit div_2048_word_64(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
         "subs	r6, %[div], r7\n\t"
         "sbc	r6, r6, r6\n\t"
         "sub	%[d1], r3, r6\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [d1] "+r" (d1), [d0] "+r" (d0), [div] "+r" (div)
         :
+#else
+        :
+        : [d1] "r" (d1), [d0] "r" (d0), [div] "r" (div)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8"
     );
     return (word32)(size_t)d1;
@@ -15881,10 +16412,16 @@ static void sp_2048_mask_64(sp_digit* r, const sp_digit* a, sp_digit m)
  * return -ve, 0 or +ve if a is less than, equal to or greater than b
  * respectively.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_int32 sp_2048_cmp_64(const sp_digit* a_p, const sp_digit* b_p)
+#else
+static sp_int32 sp_2048_cmp_64(const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register const sp_digit* a asm ("r0") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r1") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r2, #-1\n\t"
@@ -16617,8 +17154,13 @@ static sp_int32 sp_2048_cmp_64(const sp_digit* a_p, const sp_digit* b_p)
         "eor	r2, r2, r3\n\t"
 #endif /*WOLFSSL_SP_SMALL */
         "mov	%[a], r2\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r12", "lr", "r4", "r5", "r6"
     );
     return (word32)(size_t)a;
@@ -17150,13 +17692,20 @@ int sp_RsaPublic_2048(const byte* in, word32 inLen, const mp_int* em,
  * b  A single precision number to add.
  * m  Mask value to apply.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_2048_cond_add_32(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* b_p, sp_digit m_p)
+#else
+static sp_digit sp_2048_cond_add_32(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, sp_digit m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
     register sp_digit m asm ("r3") = (sp_digit)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	lr, #0\n\t"
@@ -17175,8 +17724,13 @@ static sp_digit sp_2048_cond_add_32(sp_digit* r_p, const sp_digit* a_p,
         "cmp	r12, #0x80\n\t"
         "blt	L_sp_2048_cond_add_32_words_%=\n\t"
         "mov	%[r], lr\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b), [m] "+r" (m)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b), [m] "r" (m)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r12", "lr", "r4", "r5", "r6"
     );
     return (word32)(size_t)r;
@@ -17191,13 +17745,20 @@ static sp_digit sp_2048_cond_add_32(sp_digit* r_p, const sp_digit* a_p,
  * b  A single precision number to add.
  * m  Mask value to apply.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_2048_cond_add_32(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* b_p, sp_digit m_p)
+#else
+static sp_digit sp_2048_cond_add_32(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, sp_digit m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
     register sp_digit m asm ("r3") = (sp_digit)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r8, #0\n\t"
@@ -17314,8 +17875,13 @@ static sp_digit sp_2048_cond_add_32(sp_digit* r_p, const sp_digit* a_p,
         "adcs	r5, r5, r7\n\t"
         "stm	%[r]!, {r4, r5}\n\t"
         "adc	%[r], r8, r8\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b), [m] "+r" (m)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b), [m] "r" (m)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r12", "lr", "r4", "r5", "r6", "r7", "r8"
     );
     return (word32)(size_t)r;
@@ -17636,11 +18202,17 @@ int sp_ModExp_2048(const mp_int* base, const mp_int* exp, const mp_int* mod,
 #ifdef WOLFSSL_HAVE_SP_DH
 
 #ifdef HAVE_FFDHE_2048
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_2048_lshift_64(sp_digit* r_p, const sp_digit* a_p, byte n_p)
+#else
+static void sp_2048_lshift_64(sp_digit* r, const sp_digit* a, byte n)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register byte n asm ("r2") = (byte)n_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "rsb	r12, %[n], #31\n\t"
@@ -18028,8 +18600,13 @@ static void sp_2048_lshift_64(sp_digit* r_p, const sp_digit* a_p, byte n_p)
         "orr	r6, r6, r3\n\t"
         "str	r5, [%[r]]\n\t"
         "str	r6, [%[r], #4]\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [n] "+r" (n)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [n] "r" (n)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r4", "r5", "r6", "r3", "r12"
     );
 }
@@ -18317,9 +18894,9 @@ static void sp_3072_from_bin(sp_digit* r, int size, const byte* a, int n)
         }
 #else
         switch (i) {
-            case 2: d[2] = a[2]; //fallthrough
-            case 1: d[1] = a[1]; //fallthrough
-            case 0: d[0] = a[0]; //fallthrough
+            case 2: d[i-2] = a[2]; //fallthrough
+            case 1: d[i-1] = a[1]; //fallthrough
+            case 0: d[i-0] = a[0]; //fallthrough
         }
 #endif
         j++;
@@ -18458,11 +19035,18 @@ static void sp_3072_to_bin_96(sp_digit* r, byte* a)
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static void sp_3072_mul_12(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static void sp_3072_mul_12(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static void sp_3072_mul_12(sp_digit* r, const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #48\n\t"
@@ -23942,8 +24526,13 @@ static void sp_3072_mul_12(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b
         "stm	%[r]!, {r3, r4, r5, r6}\n\t"
         "ldm	sp!, {r3, r4, r5, r6}\n\t"
         "stm	%[r]!, {r3, r4, r5, r6}\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r11",
             "r12"
     );
@@ -23955,11 +24544,19 @@ static void sp_3072_mul_12(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_3072_add_12(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_3072_add_12(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_3072_add_12(sp_digit* r, const sp_digit* a,
+    const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a]!, {r3, r4, r5, r6}\n\t"
@@ -23985,8 +24582,13 @@ static sp_digit sp_3072_add_12(sp_digit* r_p, const sp_digit* a_p, const sp_digi
         "stm	%[r]!, {r3, r4, r5, r6}\n\t"
         "mov	%[r], #0\n\t"
         "adc	%[r], %[r], #0\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10"
     );
     return (word32)(size_t)r;
@@ -23997,10 +24599,16 @@ static sp_digit sp_3072_add_12(sp_digit* r_p, const sp_digit* a_p, const sp_digi
  * a  A single precision integer and result.
  * b  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_3072_sub_in_place_24(sp_digit* a_p, const sp_digit* b_p)
+#else
+static sp_digit sp_3072_sub_in_place_24(sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* b asm ("r1") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a], {r2, r3, r4, r5}\n\t"
@@ -24046,8 +24654,13 @@ static sp_digit sp_3072_sub_in_place_24(sp_digit* a_p, const sp_digit* b_p)
         "sbcs	r5, r5, r9\n\t"
         "stm	%[a]!, {r2, r3, r4, r5}\n\t"
         "sbc	%[a], r9, r9\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9"
     );
     return (word32)(size_t)a;
@@ -24059,11 +24672,19 @@ static sp_digit sp_3072_sub_in_place_24(sp_digit* a_p, const sp_digit* b_p)
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_3072_add_24(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_3072_add_24(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_3072_add_24(sp_digit* r, const sp_digit* a,
+    const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a]!, {r3, r4, r5, r6}\n\t"
@@ -24110,8 +24731,13 @@ static sp_digit sp_3072_add_24(sp_digit* r_p, const sp_digit* a_p, const sp_digi
         "stm	%[r]!, {r3, r4, r5, r6}\n\t"
         "mov	%[r], #0\n\t"
         "adc	%[r], %[r], #0\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10"
     );
     return (word32)(size_t)r;
@@ -24191,10 +24817,16 @@ SP_NOINLINE static void sp_3072_mul_24(sp_digit* r, const sp_digit* a,
  * a  A single precision integer and result.
  * b  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_3072_sub_in_place_48(sp_digit* a_p, const sp_digit* b_p)
+#else
+static sp_digit sp_3072_sub_in_place_48(sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* b asm ("r1") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a], {r2, r3, r4, r5}\n\t"
@@ -24282,8 +24914,13 @@ static sp_digit sp_3072_sub_in_place_48(sp_digit* a_p, const sp_digit* b_p)
         "sbcs	r5, r5, r9\n\t"
         "stm	%[a]!, {r2, r3, r4, r5}\n\t"
         "sbc	%[a], r9, r9\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9"
     );
     return (word32)(size_t)a;
@@ -24295,11 +24932,19 @@ static sp_digit sp_3072_sub_in_place_48(sp_digit* a_p, const sp_digit* b_p)
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_3072_add_48(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_3072_add_48(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_3072_add_48(sp_digit* r, const sp_digit* a,
+    const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a]!, {r3, r4, r5, r6}\n\t"
@@ -24388,8 +25033,13 @@ static sp_digit sp_3072_add_48(sp_digit* r_p, const sp_digit* a_p, const sp_digi
         "stm	%[r]!, {r3, r4, r5, r6}\n\t"
         "mov	%[r], #0\n\t"
         "adc	%[r], %[r], #0\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10"
     );
     return (word32)(size_t)r;
@@ -24469,10 +25119,16 @@ SP_NOINLINE static void sp_3072_mul_48(sp_digit* r, const sp_digit* a,
  * a  A single precision integer and result.
  * b  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_3072_sub_in_place_96(sp_digit* a_p, const sp_digit* b_p)
+#else
+static sp_digit sp_3072_sub_in_place_96(sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* b asm ("r1") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a], {r2, r3, r4, r5}\n\t"
@@ -24644,8 +25300,13 @@ static sp_digit sp_3072_sub_in_place_96(sp_digit* a_p, const sp_digit* b_p)
         "sbcs	r5, r5, r9\n\t"
         "stm	%[a]!, {r2, r3, r4, r5}\n\t"
         "sbc	%[a], r9, r9\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9"
     );
     return (word32)(size_t)a;
@@ -24657,11 +25318,19 @@ static sp_digit sp_3072_sub_in_place_96(sp_digit* a_p, const sp_digit* b_p)
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_3072_add_96(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_3072_add_96(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_3072_add_96(sp_digit* r, const sp_digit* a,
+    const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a]!, {r3, r4, r5, r6}\n\t"
@@ -24834,8 +25503,13 @@ static sp_digit sp_3072_add_96(sp_digit* r_p, const sp_digit* a_p, const sp_digi
         "stm	%[r]!, {r3, r4, r5, r6}\n\t"
         "mov	%[r], #0\n\t"
         "adc	%[r], %[r], #0\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10"
     );
     return (word32)(size_t)r;
@@ -24915,10 +25589,16 @@ SP_NOINLINE static void sp_3072_mul_96(sp_digit* r, const sp_digit* a,
  * r  A single precision integer.
  * a  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_3072_sqr_12(sp_digit* r_p, const sp_digit* a_p)
+#else
+static void sp_3072_sqr_12(sp_digit* r, const sp_digit* a)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #48\n\t"
@@ -27966,8 +28646,13 @@ static void sp_3072_sqr_12(sp_digit* r_p, const sp_digit* a_p)
         "stm	%[r]!, {r2, r3, r4, r8}\n\t"
         "ldm	sp!, {r2, r3, r4, r8}\n\t"
         "stm	%[r]!, {r2, r3, r4, r8}\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
             "r12"
     );
@@ -27979,11 +28664,19 @@ static void sp_3072_sqr_12(sp_digit* r_p, const sp_digit* a_p)
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_3072_sub_12(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_3072_sub_12(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_3072_sub_12(sp_digit* r, const sp_digit* a,
+    const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a]!, {r3, r4, r5, r6}\n\t"
@@ -28008,8 +28701,13 @@ static sp_digit sp_3072_sub_12(sp_digit* r_p, const sp_digit* a_p, const sp_digi
         "sbcs	r6, r6, r10\n\t"
         "stm	%[r]!, {r3, r4, r5, r6}\n\t"
         "sbc	%[r], r6, r6\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10"
     );
     return (word32)(size_t)r;
@@ -28057,11 +28755,19 @@ SP_NOINLINE static void sp_3072_sqr_24(sp_digit* r, const sp_digit* a)
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_3072_sub_24(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_3072_sub_24(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_3072_sub_24(sp_digit* r, const sp_digit* a,
+    const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a]!, {r3, r4, r5, r6}\n\t"
@@ -28107,8 +28813,13 @@ static sp_digit sp_3072_sub_24(sp_digit* r_p, const sp_digit* a_p, const sp_digi
         "sbcs	r6, r6, r10\n\t"
         "stm	%[r]!, {r3, r4, r5, r6}\n\t"
         "sbc	%[r], r6, r6\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10"
     );
     return (word32)(size_t)r;
@@ -28156,11 +28867,19 @@ SP_NOINLINE static void sp_3072_sqr_48(sp_digit* r, const sp_digit* a)
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_3072_sub_48(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_3072_sub_48(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_3072_sub_48(sp_digit* r, const sp_digit* a,
+    const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a]!, {r3, r4, r5, r6}\n\t"
@@ -28248,8 +28967,13 @@ static sp_digit sp_3072_sub_48(sp_digit* r_p, const sp_digit* a_p, const sp_digi
         "sbcs	r6, r6, r10\n\t"
         "stm	%[r]!, {r3, r4, r5, r6}\n\t"
         "sbc	%[r], r6, r6\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10"
     );
     return (word32)(size_t)r;
@@ -28299,11 +29023,19 @@ SP_NOINLINE static void sp_3072_sqr_96(sp_digit* r, const sp_digit* a)
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_3072_add_96(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_3072_add_96(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_3072_add_96(sp_digit* r, const sp_digit* a,
+    const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r3, #0\n\t"
@@ -28323,8 +29055,13 @@ static sp_digit sp_3072_add_96(sp_digit* r_p, const sp_digit* a_p, const sp_digi
         "cmp	%[a], r12\n\t"
         "bne	L_sp_3072_add_96_word_%=\n\t"
         "mov	%[r], r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11",
             "r3", "r12"
     );
@@ -28338,10 +29075,16 @@ static sp_digit sp_3072_add_96(sp_digit* r_p, const sp_digit* a_p, const sp_digi
  * a  A single precision integer.
  * b  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_3072_sub_in_place_96(sp_digit* a_p, const sp_digit* b_p)
+#else
+static sp_digit sp_3072_sub_in_place_96(sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* b asm ("r1") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r12, #0\n\t"
@@ -28360,8 +29103,13 @@ static sp_digit sp_3072_sub_in_place_96(sp_digit* a_p, const sp_digit* b_p)
         "cmp	%[a], lr\n\t"
         "bne	L_sp_3072_sub_in_pkace_96_word_%=\n\t"
         "mov	%[a], r12\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r12",
             "lr"
     );
@@ -28376,11 +29124,18 @@ static sp_digit sp_3072_sub_in_place_96(sp_digit* a_p, const sp_digit* b_p)
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static void sp_3072_mul_96(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static void sp_3072_mul_96(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static void sp_3072_mul_96(sp_digit* r, const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #0x300\n\t"
@@ -28563,8 +29318,13 @@ static void sp_3072_mul_96(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b
         "stm	%[r]!, {r3, r4, r6, r7, r8, r9, r10, r11}\n\t"
         "subs	r5, r5, #32\n\t"
         "bgt	L_sp_3072_mul_96_store_%=\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "lr",
             "r11"
     );
@@ -28575,10 +29335,16 @@ static void sp_3072_mul_96(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b
  * r  A single precision integer.
  * a  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_3072_sqr_96(sp_digit* r_p, const sp_digit* a_p)
+#else
+static void sp_3072_sqr_96(sp_digit* r, const sp_digit* a)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #0x300\n\t"
@@ -28721,8 +29487,13 @@ static void sp_3072_sqr_96(sp_digit* r_p, const sp_digit* a_p)
         "stm	%[r]!, {r3, r4, r6, r7, r8, r9, r10, r11}\n\t"
         "subs	r5, r5, #32\n\t"
         "bgt	L_sp_3072_sqr_96_store_%=\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "lr",
             "r11"
     );
@@ -28754,11 +29525,19 @@ static void sp_3072_mask_48(sp_digit* r, const sp_digit* a, sp_digit m)
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_3072_add_48(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_3072_add_48(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_3072_add_48(sp_digit* r, const sp_digit* a,
+    const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r3, #0\n\t"
@@ -28778,8 +29557,13 @@ static sp_digit sp_3072_add_48(sp_digit* r_p, const sp_digit* a_p, const sp_digi
         "cmp	%[a], r12\n\t"
         "bne	L_sp_3072_add_48_word_%=\n\t"
         "mov	%[r], r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11",
             "r3", "r12"
     );
@@ -28793,10 +29577,16 @@ static sp_digit sp_3072_add_48(sp_digit* r_p, const sp_digit* a_p, const sp_digi
  * a  A single precision integer.
  * b  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_3072_sub_in_place_48(sp_digit* a_p, const sp_digit* b_p)
+#else
+static sp_digit sp_3072_sub_in_place_48(sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* b asm ("r1") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r12, #0\n\t"
@@ -28815,8 +29605,13 @@ static sp_digit sp_3072_sub_in_place_48(sp_digit* a_p, const sp_digit* b_p)
         "cmp	%[a], lr\n\t"
         "bne	L_sp_3072_sub_in_pkace_48_word_%=\n\t"
         "mov	%[a], r12\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r12",
             "lr"
     );
@@ -28831,11 +29626,18 @@ static sp_digit sp_3072_sub_in_place_48(sp_digit* a_p, const sp_digit* b_p)
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static void sp_3072_mul_48(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static void sp_3072_mul_48(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static void sp_3072_mul_48(sp_digit* r, const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #0x180\n\t"
@@ -29018,8 +29820,13 @@ static void sp_3072_mul_48(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b
         "stm	%[r]!, {r3, r4, r6, r7, r8, r9, r10, r11}\n\t"
         "subs	r5, r5, #32\n\t"
         "bgt	L_sp_3072_mul_48_store_%=\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "lr",
             "r11"
     );
@@ -29030,10 +29837,16 @@ static void sp_3072_mul_48(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b
  * r  A single precision integer.
  * a  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_3072_sqr_48(sp_digit* r_p, const sp_digit* a_p)
+#else
+static void sp_3072_sqr_48(sp_digit* r, const sp_digit* a)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #0x180\n\t"
@@ -29176,8 +29989,13 @@ static void sp_3072_sqr_48(sp_digit* r_p, const sp_digit* a_p)
         "stm	%[r]!, {r3, r4, r6, r7, r8, r9, r10, r11}\n\t"
         "subs	r5, r5, #32\n\t"
         "bgt	L_sp_3072_sqr_48_store_%=\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "lr",
             "r11"
     );
@@ -29213,11 +30031,17 @@ static void sp_3072_mont_setup(const sp_digit* a, sp_digit* rho)
  * a  A single precision integer.
  * b  A single precision digit.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_3072_mul_d_96(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
+#else
+static void sp_3072_mul_d_96(sp_digit* r, const sp_digit* a, sp_digit b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register sp_digit b asm ("r2") = (sp_digit)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         /* A[0] * B */
@@ -29298,8 +30122,13 @@ static void sp_3072_mul_d_96(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
         "cmp	r9, #0x180\n\t"
         "blt	L_sp_3072_mul_d_96_word_%=\n\t"
         "str	r3, [%[r], #384]\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9"
     );
 }
@@ -29311,11 +30140,17 @@ static void sp_3072_mul_d_96(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
  * a  A single precision integer.
  * b  A single precision digit.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_3072_mul_d_96(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
+#else
+static void sp_3072_mul_d_96(sp_digit* r, const sp_digit* a, sp_digit b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register sp_digit b asm ("r2") = (sp_digit)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         /* A[0] * B */
@@ -32387,8 +33222,13 @@ static void sp_3072_mul_d_96(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
 #endif
         "stm	%[r]!, {r5}\n\t"
         "str	r3, [%[r]]\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8"
     );
 }
@@ -32418,13 +33258,20 @@ static void sp_3072_mont_norm_48(sp_digit* r, const sp_digit* m)
  * b  A single precision number to subtract.
  * m  Mask value to apply.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_3072_cond_sub_48(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* b_p, sp_digit m_p)
+#else
+static sp_digit sp_3072_cond_sub_48(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, sp_digit m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
     register sp_digit m asm ("r3") = (sp_digit)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r6, #0\n\t"
@@ -32443,8 +33290,13 @@ static sp_digit sp_3072_cond_sub_48(sp_digit* r_p, const sp_digit* a_p,
         "cmp	lr, #0xc0\n\t"
         "blt	L_sp_3072_cond_sub_48_words_%=\n\t"
         "mov	%[r], r12\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b), [m] "+r" (m)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b), [m] "r" (m)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r12", "lr", "r4", "r5", "r6"
     );
     return (word32)(size_t)r;
@@ -32459,13 +33311,20 @@ static sp_digit sp_3072_cond_sub_48(sp_digit* r_p, const sp_digit* a_p,
  * b  A single precision number to subtract.
  * m  Mask value to apply.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_3072_cond_sub_48(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* b_p, sp_digit m_p)
+#else
+static sp_digit sp_3072_cond_sub_48(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, sp_digit m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
     register sp_digit m asm ("r3") = (sp_digit)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	lr, #0\n\t"
@@ -32638,8 +33497,13 @@ static sp_digit sp_3072_cond_sub_48(sp_digit* r_p, const sp_digit* a_p,
         "sbcs	r5, r5, r7\n\t"
         "stm	%[r]!, {r4, r5}\n\t"
         "sbc	%[r], lr, lr\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b), [m] "+r" (m)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b), [m] "r" (m)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r12", "lr", "r4", "r5", "r6", "r7"
     );
     return (word32)(size_t)r;
@@ -32653,11 +33517,19 @@ static sp_digit sp_3072_cond_sub_48(sp_digit* r_p, const sp_digit* a_p,
  * m   The single precision number representing the modulus.
  * mp  The digit representing the negative inverse of m mod 2^n.
  */
-static SP_NOINLINE void sp_3072_mont_reduce_48(sp_digit* a_p, const sp_digit* m_p, sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_3072_mont_reduce_48(sp_digit* a_p,
+    const sp_digit* m_p, sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_3072_mont_reduce_48(sp_digit* a, const sp_digit* m,
+    sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* m asm ("r1") = (const sp_digit*)m_p;
     register sp_digit mp asm ("r2") = (sp_digit)mp_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
 #if !(defined(WOLFSSL_ARM_ARCH) && (WOLFSSL_ARM_ARCH < 4))
@@ -34083,8 +34955,13 @@ static SP_NOINLINE void sp_3072_mont_reduce_48(sp_digit* a_p, const sp_digit* m_
         "str	r12, [%[a]]\n\t"
         "str	lr, [%[a], #4]\n\t"
         "mov	%[mp], r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [m] "+r" (m), [mp] "+r" (mp)
         :
+#else
+        :
+        : [a] "r" (a), [m] "r" (m), [mp] "r" (mp)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8", "r9",
             "r10", "r11"
     );
@@ -34098,11 +34975,19 @@ static SP_NOINLINE void sp_3072_mont_reduce_48(sp_digit* a_p, const sp_digit* m_
  * m   The single precision number representing the modulus.
  * mp  The digit representing the negative inverse of m mod 2^n.
  */
-static SP_NOINLINE void sp_3072_mont_reduce_48(sp_digit* a_p, const sp_digit* m_p, sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_3072_mont_reduce_48(sp_digit* a_p,
+    const sp_digit* m_p, sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_3072_mont_reduce_48(sp_digit* a, const sp_digit* m,
+    sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* m asm ("r1") = (const sp_digit*)m_p;
     register sp_digit mp asm ("r2") = (sp_digit)mp_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldr	r11, [%[m]]\n\t"
@@ -34507,8 +35392,13 @@ static SP_NOINLINE void sp_3072_mont_reduce_48(sp_digit* a_p, const sp_digit* m_
         "str	r12, [%[a]]\n\t"
         "str	lr, [%[a], #4]\n\t"
         "mov	%[mp], r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [m] "+r" (m), [mp] "+r" (mp)
         :
+#else
+        :
+        : [a] "r" (a), [m] "r" (m), [mp] "r" (mp)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8", "r9",
             "r10", "r11"
     );
@@ -34522,11 +35412,19 @@ static SP_NOINLINE void sp_3072_mont_reduce_48(sp_digit* a_p, const sp_digit* m_
  * m   The single precision number representing the modulus.
  * mp  The digit representing the negative inverse of m mod 2^n.
  */
-static SP_NOINLINE void sp_3072_mont_reduce_48(sp_digit* a_p, const sp_digit* m_p, sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_3072_mont_reduce_48(sp_digit* a_p,
+    const sp_digit* m_p, sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_3072_mont_reduce_48(sp_digit* a, const sp_digit* m,
+    sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* m asm ("r1") = (const sp_digit*)m_p;
     register sp_digit mp asm ("r2") = (sp_digit)mp_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         /* i = 0 */
@@ -34793,8 +35691,13 @@ static SP_NOINLINE void sp_3072_mont_reduce_48(sp_digit* a_p, const sp_digit* m_
         "str	r7, [%[a], #12]\n\t"
         "str	r8, [%[a], #16]\n\t"
         "mov	%[mp], lr\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [m] "+r" (m), [mp] "+r" (mp)
         :
+#else
+        :
+        : [a] "r" (a), [m] "r" (m), [mp] "r" (mp)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8", "r9",
             "r10", "r11"
     );
@@ -34839,11 +35742,17 @@ SP_NOINLINE static void sp_3072_mont_sqr_48(sp_digit* r, const sp_digit* a,
  * a  A single precision integer.
  * b  A single precision digit.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_3072_mul_d_48(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
+#else
+static void sp_3072_mul_d_48(sp_digit* r, const sp_digit* a, sp_digit b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register sp_digit b asm ("r2") = (sp_digit)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         /* A[0] * B */
@@ -34924,8 +35833,13 @@ static void sp_3072_mul_d_48(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
         "cmp	r9, #0xc0\n\t"
         "blt	L_sp_3072_mul_d_48_word_%=\n\t"
         "str	r3, [%[r], #192]\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9"
     );
 }
@@ -34937,11 +35851,17 @@ static void sp_3072_mul_d_48(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
  * a  A single precision integer.
  * b  A single precision digit.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_3072_mul_d_48(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
+#else
+static void sp_3072_mul_d_48(sp_digit* r, const sp_digit* a, sp_digit b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register sp_digit b asm ("r2") = (sp_digit)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         /* A[0] * B */
@@ -36477,8 +37397,13 @@ static void sp_3072_mul_d_48(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
 #endif
         "stm	%[r]!, {r5}\n\t"
         "str	r3, [%[r]]\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8"
     );
 }
@@ -36494,11 +37419,17 @@ static void sp_3072_mul_d_48(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
  *
  * Note that this is an approximate div. It may give an answer 1 larger.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit div_3072_word_48(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
+#else
+static sp_digit div_3072_word_48(sp_digit d1, sp_digit d0, sp_digit div)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit d1 asm ("r0") = (sp_digit)d1_p;
     register sp_digit d0 asm ("r1") = (sp_digit)d0_p;
     register sp_digit div asm ("r2") = (sp_digit)div_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "lsr	r6, %[div], #16\n\t"
@@ -36536,8 +37467,13 @@ static sp_digit div_3072_word_48(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
         "sub	%[d0], %[d0], r3\n\t"
         "udiv	r3, %[d0], %[div]\n\t"
         "add	%[d1], r4, r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [d1] "+r" (d1), [d0] "+r" (d0), [div] "+r" (div)
         :
+#else
+        :
+        : [d1] "r" (d1), [d0] "r" (d0), [div] "r" (div)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8"
     );
     return (word32)(size_t)d1;
@@ -36553,11 +37489,17 @@ static sp_digit div_3072_word_48(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
  *
  * Note that this is an approximate div. It may give an answer 1 larger.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit div_3072_word_48(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
+#else
+static sp_digit div_3072_word_48(sp_digit d1, sp_digit d0, sp_digit div)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit d1 asm ("r0") = (sp_digit)d1_p;
     register sp_digit d0 asm ("r1") = (sp_digit)d0_p;
     register sp_digit div asm ("r2") = (sp_digit)div_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "lsr	lr, %[div], #1\n\t"
@@ -36674,8 +37616,13 @@ static sp_digit div_3072_word_48(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
         "subs	r6, %[div], r7\n\t"
         "sbc	r6, r6, r6\n\t"
         "sub	%[d1], r3, r6\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [d1] "+r" (d1), [d0] "+r" (d0), [div] "+r" (div)
         :
+#else
+        :
+        : [d1] "r" (d1), [d0] "r" (d0), [div] "r" (div)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8"
     );
     return (word32)(size_t)d1;
@@ -36689,10 +37636,16 @@ static sp_digit div_3072_word_48(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
  * return -ve, 0 or +ve if a is less than, equal to or greater than b
  * respectively.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_int32 sp_3072_cmp_48(const sp_digit* a_p, const sp_digit* b_p)
+#else
+static sp_int32 sp_3072_cmp_48(const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register const sp_digit* a asm ("r0") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r1") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r2, #-1\n\t"
@@ -37249,8 +38202,13 @@ static sp_int32 sp_3072_cmp_48(const sp_digit* a_p, const sp_digit* b_p)
         "eor	r2, r2, r3\n\t"
 #endif /*WOLFSSL_SP_SMALL */
         "mov	%[a], r2\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r12", "lr", "r4", "r5", "r6"
     );
     return (word32)(size_t)a;
@@ -37660,13 +38618,20 @@ static void sp_3072_mont_norm_96(sp_digit* r, const sp_digit* m)
  * b  A single precision number to subtract.
  * m  Mask value to apply.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_3072_cond_sub_96(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* b_p, sp_digit m_p)
+#else
+static sp_digit sp_3072_cond_sub_96(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, sp_digit m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
     register sp_digit m asm ("r3") = (sp_digit)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r6, #0\n\t"
@@ -37685,8 +38650,13 @@ static sp_digit sp_3072_cond_sub_96(sp_digit* r_p, const sp_digit* a_p,
         "cmp	lr, #0x180\n\t"
         "blt	L_sp_3072_cond_sub_96_words_%=\n\t"
         "mov	%[r], r12\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b), [m] "+r" (m)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b), [m] "r" (m)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r12", "lr", "r4", "r5", "r6"
     );
     return (word32)(size_t)r;
@@ -37701,13 +38671,20 @@ static sp_digit sp_3072_cond_sub_96(sp_digit* r_p, const sp_digit* a_p,
  * b  A single precision number to subtract.
  * m  Mask value to apply.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_3072_cond_sub_96(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* b_p, sp_digit m_p)
+#else
+static sp_digit sp_3072_cond_sub_96(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, sp_digit m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
     register sp_digit m asm ("r3") = (sp_digit)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	lr, #0\n\t"
@@ -38048,8 +39025,13 @@ static sp_digit sp_3072_cond_sub_96(sp_digit* r_p, const sp_digit* a_p,
         "sbcs	r5, r5, r7\n\t"
         "stm	%[r]!, {r4, r5}\n\t"
         "sbc	%[r], lr, lr\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b), [m] "+r" (m)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b), [m] "r" (m)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r12", "lr", "r4", "r5", "r6", "r7"
     );
     return (word32)(size_t)r;
@@ -38063,11 +39045,19 @@ static sp_digit sp_3072_cond_sub_96(sp_digit* r_p, const sp_digit* a_p,
  * m   The single precision number representing the modulus.
  * mp  The digit representing the negative inverse of m mod 2^n.
  */
-static SP_NOINLINE void sp_3072_mont_reduce_96(sp_digit* a_p, const sp_digit* m_p, sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_3072_mont_reduce_96(sp_digit* a_p,
+    const sp_digit* m_p, sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_3072_mont_reduce_96(sp_digit* a, const sp_digit* m,
+    sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* m asm ("r1") = (const sp_digit*)m_p;
     register sp_digit mp asm ("r2") = (sp_digit)mp_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
 #if !(defined(WOLFSSL_ARM_ARCH) && (WOLFSSL_ARM_ARCH < 4))
@@ -40885,8 +41875,13 @@ static SP_NOINLINE void sp_3072_mont_reduce_96(sp_digit* a_p, const sp_digit* m_
         "str	r12, [%[a]]\n\t"
         "str	lr, [%[a], #4]\n\t"
         "mov	%[mp], r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [m] "+r" (m), [mp] "+r" (mp)
         :
+#else
+        :
+        : [a] "r" (a), [m] "r" (m), [mp] "r" (mp)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8", "r9",
             "r10", "r11"
     );
@@ -40900,11 +41895,19 @@ static SP_NOINLINE void sp_3072_mont_reduce_96(sp_digit* a_p, const sp_digit* m_
  * m   The single precision number representing the modulus.
  * mp  The digit representing the negative inverse of m mod 2^n.
  */
-static SP_NOINLINE void sp_3072_mont_reduce_96(sp_digit* a_p, const sp_digit* m_p, sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_3072_mont_reduce_96(sp_digit* a_p,
+    const sp_digit* m_p, sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_3072_mont_reduce_96(sp_digit* a, const sp_digit* m,
+    sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* m asm ("r1") = (const sp_digit*)m_p;
     register sp_digit mp asm ("r2") = (sp_digit)mp_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldr	r11, [%[m]]\n\t"
@@ -41693,8 +42696,13 @@ static SP_NOINLINE void sp_3072_mont_reduce_96(sp_digit* a_p, const sp_digit* m_
         "str	r12, [%[a]]\n\t"
         "str	lr, [%[a], #4]\n\t"
         "mov	%[mp], r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [m] "+r" (m), [mp] "+r" (mp)
         :
+#else
+        :
+        : [a] "r" (a), [m] "r" (m), [mp] "r" (mp)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8", "r9",
             "r10", "r11"
     );
@@ -41708,11 +42716,19 @@ static SP_NOINLINE void sp_3072_mont_reduce_96(sp_digit* a_p, const sp_digit* m_
  * m   The single precision number representing the modulus.
  * mp  The digit representing the negative inverse of m mod 2^n.
  */
-static SP_NOINLINE void sp_3072_mont_reduce_96(sp_digit* a_p, const sp_digit* m_p, sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_3072_mont_reduce_96(sp_digit* a_p,
+    const sp_digit* m_p, sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_3072_mont_reduce_96(sp_digit* a, const sp_digit* m,
+    sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* m asm ("r1") = (const sp_digit*)m_p;
     register sp_digit mp asm ("r2") = (sp_digit)mp_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         /* i = 0 */
@@ -42219,8 +43235,13 @@ static SP_NOINLINE void sp_3072_mont_reduce_96(sp_digit* a_p, const sp_digit* m_
         "str	r7, [%[a], #12]\n\t"
         "str	r8, [%[a], #16]\n\t"
         "mov	%[mp], lr\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [m] "+r" (m), [mp] "+r" (mp)
         :
+#else
+        :
+        : [a] "r" (a), [m] "r" (m), [mp] "r" (mp)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8", "r9",
             "r10", "r11"
     );
@@ -42265,11 +43286,19 @@ SP_NOINLINE static void sp_3072_mont_sqr_96(sp_digit* r, const sp_digit* a,
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_3072_sub_96(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_3072_sub_96(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_3072_sub_96(sp_digit* r, const sp_digit* a,
+    const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r12, #0\n\t"
@@ -42288,8 +43317,13 @@ static sp_digit sp_3072_sub_96(sp_digit* r_p, const sp_digit* a_p, const sp_digi
         "cmp	%[a], lr\n\t"
         "bne	L_sp_3072_sub_96_word_%=\n\t"
         "mov	%[r], r12\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
             "r12", "lr"
     );
@@ -42303,11 +43337,19 @@ static sp_digit sp_3072_sub_96(sp_digit* r_p, const sp_digit* a_p, const sp_digi
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_3072_sub_96(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_3072_sub_96(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_3072_sub_96(sp_digit* r, const sp_digit* a,
+    const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a]!, {r3, r4, r5, r6}\n\t"
@@ -42479,8 +43521,13 @@ static sp_digit sp_3072_sub_96(sp_digit* r_p, const sp_digit* a_p, const sp_digi
         "sbcs	r6, r6, r10\n\t"
         "stm	%[r]!, {r3, r4, r5, r6}\n\t"
         "sbc	%[r], r6, r6\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10"
     );
     return (word32)(size_t)r;
@@ -42497,11 +43544,17 @@ static sp_digit sp_3072_sub_96(sp_digit* r_p, const sp_digit* a_p, const sp_digi
  *
  * Note that this is an approximate div. It may give an answer 1 larger.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit div_3072_word_96(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
+#else
+static sp_digit div_3072_word_96(sp_digit d1, sp_digit d0, sp_digit div)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit d1 asm ("r0") = (sp_digit)d1_p;
     register sp_digit d0 asm ("r1") = (sp_digit)d0_p;
     register sp_digit div asm ("r2") = (sp_digit)div_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "lsr	r6, %[div], #16\n\t"
@@ -42539,8 +43592,13 @@ static sp_digit div_3072_word_96(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
         "sub	%[d0], %[d0], r3\n\t"
         "udiv	r3, %[d0], %[div]\n\t"
         "add	%[d1], r4, r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [d1] "+r" (d1), [d0] "+r" (d0), [div] "+r" (div)
         :
+#else
+        :
+        : [d1] "r" (d1), [d0] "r" (d0), [div] "r" (div)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8"
     );
     return (word32)(size_t)d1;
@@ -42556,11 +43614,17 @@ static sp_digit div_3072_word_96(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
  *
  * Note that this is an approximate div. It may give an answer 1 larger.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit div_3072_word_96(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
+#else
+static sp_digit div_3072_word_96(sp_digit d1, sp_digit d0, sp_digit div)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit d1 asm ("r0") = (sp_digit)d1_p;
     register sp_digit d0 asm ("r1") = (sp_digit)d0_p;
     register sp_digit div asm ("r2") = (sp_digit)div_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "lsr	lr, %[div], #1\n\t"
@@ -42677,8 +43741,13 @@ static sp_digit div_3072_word_96(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
         "subs	r6, %[div], r7\n\t"
         "sbc	r6, r6, r6\n\t"
         "sub	%[d1], r3, r6\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [d1] "+r" (d1), [d0] "+r" (d0), [div] "+r" (div)
         :
+#else
+        :
+        : [d1] "r" (d1), [d0] "r" (d0), [div] "r" (div)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8"
     );
     return (word32)(size_t)d1;
@@ -42796,10 +43865,16 @@ static void sp_3072_mask_96(sp_digit* r, const sp_digit* a, sp_digit m)
  * return -ve, 0 or +ve if a is less than, equal to or greater than b
  * respectively.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_int32 sp_3072_cmp_96(const sp_digit* a_p, const sp_digit* b_p)
+#else
+static sp_int32 sp_3072_cmp_96(const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register const sp_digit* a asm ("r0") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r1") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r2, #-1\n\t"
@@ -43889,8 +44964,13 @@ static sp_int32 sp_3072_cmp_96(const sp_digit* a_p, const sp_digit* b_p)
         "eor	r2, r2, r3\n\t"
 #endif /*WOLFSSL_SP_SMALL */
         "mov	%[a], r2\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r12", "lr", "r4", "r5", "r6"
     );
     return (word32)(size_t)a;
@@ -44422,13 +45502,20 @@ int sp_RsaPublic_3072(const byte* in, word32 inLen, const mp_int* em,
  * b  A single precision number to add.
  * m  Mask value to apply.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_3072_cond_add_48(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* b_p, sp_digit m_p)
+#else
+static sp_digit sp_3072_cond_add_48(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, sp_digit m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
     register sp_digit m asm ("r3") = (sp_digit)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	lr, #0\n\t"
@@ -44447,8 +45534,13 @@ static sp_digit sp_3072_cond_add_48(sp_digit* r_p, const sp_digit* a_p,
         "cmp	r12, #0xc0\n\t"
         "blt	L_sp_3072_cond_add_48_words_%=\n\t"
         "mov	%[r], lr\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b), [m] "+r" (m)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b), [m] "r" (m)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r12", "lr", "r4", "r5", "r6"
     );
     return (word32)(size_t)r;
@@ -44463,13 +45555,20 @@ static sp_digit sp_3072_cond_add_48(sp_digit* r_p, const sp_digit* a_p,
  * b  A single precision number to add.
  * m  Mask value to apply.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_3072_cond_add_48(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* b_p, sp_digit m_p)
+#else
+static sp_digit sp_3072_cond_add_48(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, sp_digit m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
     register sp_digit m asm ("r3") = (sp_digit)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r8, #0\n\t"
@@ -44642,8 +45741,13 @@ static sp_digit sp_3072_cond_add_48(sp_digit* r_p, const sp_digit* a_p,
         "adcs	r5, r5, r7\n\t"
         "stm	%[r]!, {r4, r5}\n\t"
         "adc	%[r], r8, r8\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b), [m] "+r" (m)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b), [m] "r" (m)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r12", "lr", "r4", "r5", "r6", "r7", "r8"
     );
     return (word32)(size_t)r;
@@ -44964,11 +46068,17 @@ int sp_ModExp_3072(const mp_int* base, const mp_int* exp, const mp_int* mod,
 #ifdef WOLFSSL_HAVE_SP_DH
 
 #ifdef HAVE_FFDHE_3072
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_3072_lshift_96(sp_digit* r_p, const sp_digit* a_p, byte n_p)
+#else
+static void sp_3072_lshift_96(sp_digit* r, const sp_digit* a, byte n)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register byte n asm ("r2") = (byte)n_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "rsb	r12, %[n], #31\n\t"
@@ -45548,8 +46658,13 @@ static void sp_3072_lshift_96(sp_digit* r_p, const sp_digit* a_p, byte n_p)
         "orr	r4, r4, r3\n\t"
         "str	r6, [%[r]]\n\t"
         "str	r4, [%[r], #4]\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [n] "+r" (n)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [n] "r" (n)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r4", "r5", "r6", "r3", "r12"
     );
 }
@@ -45837,9 +46952,9 @@ static void sp_4096_from_bin(sp_digit* r, int size, const byte* a, int n)
         }
 #else
         switch (i) {
-            case 2: d[2] = a[2]; //fallthrough
-            case 1: d[1] = a[1]; //fallthrough
-            case 0: d[0] = a[0]; //fallthrough
+            case 2: d[i-2] = a[2]; //fallthrough
+            case 1: d[i-1] = a[1]; //fallthrough
+            case 0: d[i-0] = a[0]; //fallthrough
         }
 #endif
         j++;
@@ -45977,10 +47092,16 @@ static void sp_4096_to_bin_128(sp_digit* r, byte* a)
  * a  A single precision integer and result.
  * b  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_4096_sub_in_place_128(sp_digit* a_p, const sp_digit* b_p)
+#else
+static sp_digit sp_4096_sub_in_place_128(sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* b asm ("r1") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a], {r2, r3, r4, r5}\n\t"
@@ -46208,8 +47329,13 @@ static sp_digit sp_4096_sub_in_place_128(sp_digit* a_p, const sp_digit* b_p)
         "sbcs	r5, r5, r9\n\t"
         "stm	%[a]!, {r2, r3, r4, r5}\n\t"
         "sbc	%[a], r9, r9\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9"
     );
     return (word32)(size_t)a;
@@ -46221,12 +47347,19 @@ static sp_digit sp_4096_sub_in_place_128(sp_digit* a_p, const sp_digit* b_p)
  * a  A single precision integer.
  * b  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_4096_add_128(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* b_p)
+#else
+static sp_digit sp_4096_add_128(sp_digit* r, const sp_digit* a,
+    const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a]!, {r3, r4, r5, r6}\n\t"
@@ -46455,8 +47588,13 @@ static sp_digit sp_4096_add_128(sp_digit* r_p, const sp_digit* a_p,
         "stm	%[r]!, {r3, r4, r5, r6}\n\t"
         "mov	%[r], #0\n\t"
         "adc	%[r], %[r], #0\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10"
     );
     return (word32)(size_t)r;
@@ -46545,12 +47683,19 @@ SP_NOINLINE static void sp_4096_sqr_128(sp_digit* r, const sp_digit* a)
  * a  A single precision integer.
  * b  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_4096_add_128(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* b_p)
+#else
+static sp_digit sp_4096_add_128(sp_digit* r, const sp_digit* a,
+    const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r3, #0\n\t"
@@ -46570,8 +47715,13 @@ static sp_digit sp_4096_add_128(sp_digit* r_p, const sp_digit* a_p,
         "cmp	%[a], r12\n\t"
         "bne	L_sp_4096_add_128_word_%=\n\t"
         "mov	%[r], r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11",
             "r3", "r12"
     );
@@ -46585,10 +47735,16 @@ static sp_digit sp_4096_add_128(sp_digit* r_p, const sp_digit* a_p,
  * a  A single precision integer.
  * b  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_4096_sub_in_place_128(sp_digit* a_p, const sp_digit* b_p)
+#else
+static sp_digit sp_4096_sub_in_place_128(sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* b asm ("r1") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r12, #0\n\t"
@@ -46607,8 +47763,13 @@ static sp_digit sp_4096_sub_in_place_128(sp_digit* a_p, const sp_digit* b_p)
         "cmp	%[a], lr\n\t"
         "bne	L_sp_4096_sub_in_pkace_128_word_%=\n\t"
         "mov	%[a], r12\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r12",
             "lr"
     );
@@ -46623,11 +47784,18 @@ static sp_digit sp_4096_sub_in_place_128(sp_digit* a_p, const sp_digit* b_p)
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static void sp_4096_mul_128(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static void sp_4096_mul_128(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static void sp_4096_mul_128(sp_digit* r, const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #0x400\n\t"
@@ -46810,8 +47978,13 @@ static void sp_4096_mul_128(sp_digit* r_p, const sp_digit* a_p, const sp_digit* 
         "stm	%[r]!, {r3, r4, r6, r7, r8, r9, r10, r11}\n\t"
         "subs	r5, r5, #32\n\t"
         "bgt	L_sp_4096_mul_128_store_%=\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "lr",
             "r11"
     );
@@ -46822,10 +47995,16 @@ static void sp_4096_mul_128(sp_digit* r_p, const sp_digit* a_p, const sp_digit* 
  * r  A single precision integer.
  * a  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_4096_sqr_128(sp_digit* r_p, const sp_digit* a_p)
+#else
+static void sp_4096_sqr_128(sp_digit* r, const sp_digit* a)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #0x400\n\t"
@@ -46968,8 +48147,13 @@ static void sp_4096_sqr_128(sp_digit* r_p, const sp_digit* a_p)
         "stm	%[r]!, {r3, r4, r6, r7, r8, r9, r10, r11}\n\t"
         "subs	r5, r5, #32\n\t"
         "bgt	L_sp_4096_sqr_128_store_%=\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "lr",
             "r11"
     );
@@ -47003,11 +48187,17 @@ static void sp_4096_mont_setup(const sp_digit* a, sp_digit* rho)
  * a  A single precision integer.
  * b  A single precision digit.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_4096_mul_d_128(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
+#else
+static void sp_4096_mul_d_128(sp_digit* r, const sp_digit* a, sp_digit b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register sp_digit b asm ("r2") = (sp_digit)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         /* A[0] * B */
@@ -47088,8 +48278,13 @@ static void sp_4096_mul_d_128(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
         "cmp	r9, #0x200\n\t"
         "blt	L_sp_4096_mul_d_128_word_%=\n\t"
         "str	r3, [%[r], #512]\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9"
     );
 }
@@ -47101,11 +48296,17 @@ static void sp_4096_mul_d_128(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
  * a  A single precision integer.
  * b  A single precision digit.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_4096_mul_d_128(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
+#else
+static void sp_4096_mul_d_128(sp_digit* r, const sp_digit* a, sp_digit b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register sp_digit b asm ("r2") = (sp_digit)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         /* A[0] * B */
@@ -51201,8 +52402,13 @@ static void sp_4096_mul_d_128(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
 #endif
         "stm	%[r]!, {r4}\n\t"
         "str	r5, [%[r]]\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8"
     );
 }
@@ -51233,13 +52439,20 @@ static void sp_4096_mont_norm_128(sp_digit* r, const sp_digit* m)
  * b  A single precision number to subtract.
  * m  Mask value to apply.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_4096_cond_sub_128(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* b_p, sp_digit m_p)
+#else
+static sp_digit sp_4096_cond_sub_128(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, sp_digit m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
     register sp_digit m asm ("r3") = (sp_digit)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r6, #0\n\t"
@@ -51258,8 +52471,13 @@ static sp_digit sp_4096_cond_sub_128(sp_digit* r_p, const sp_digit* a_p,
         "cmp	lr, #0x200\n\t"
         "blt	L_sp_4096_cond_sub_128_words_%=\n\t"
         "mov	%[r], r12\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b), [m] "+r" (m)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b), [m] "r" (m)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r12", "lr", "r4", "r5", "r6"
     );
     return (word32)(size_t)r;
@@ -51274,13 +52492,20 @@ static sp_digit sp_4096_cond_sub_128(sp_digit* r_p, const sp_digit* a_p,
  * b  A single precision number to subtract.
  * m  Mask value to apply.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_4096_cond_sub_128(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* b_p, sp_digit m_p)
+#else
+static sp_digit sp_4096_cond_sub_128(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, sp_digit m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
     register sp_digit m asm ("r3") = (sp_digit)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	lr, #0\n\t"
@@ -51733,8 +52958,13 @@ static sp_digit sp_4096_cond_sub_128(sp_digit* r_p, const sp_digit* a_p,
         "sbcs	r5, r5, r7\n\t"
         "stm	%[r]!, {r4, r5}\n\t"
         "sbc	%[r], lr, lr\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b), [m] "+r" (m)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b), [m] "r" (m)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r12", "lr", "r4", "r5", "r6", "r7"
     );
     return (word32)(size_t)r;
@@ -51748,11 +52978,19 @@ static sp_digit sp_4096_cond_sub_128(sp_digit* r_p, const sp_digit* a_p,
  * m   The single precision number representing the modulus.
  * mp  The digit representing the negative inverse of m mod 2^n.
  */
-static SP_NOINLINE void sp_4096_mont_reduce_128(sp_digit* a_p, const sp_digit* m_p, sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_4096_mont_reduce_128(sp_digit* a_p,
+    const sp_digit* m_p, sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_4096_mont_reduce_128(sp_digit* a, const sp_digit* m,
+    sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* m asm ("r1") = (const sp_digit*)m_p;
     register sp_digit mp asm ("r2") = (sp_digit)mp_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
 #if !(defined(WOLFSSL_ARM_ARCH) && (WOLFSSL_ARM_ARCH < 4))
@@ -55498,8 +56736,13 @@ static SP_NOINLINE void sp_4096_mont_reduce_128(sp_digit* a_p, const sp_digit* m
         "str	r12, [%[a]]\n\t"
         "str	lr, [%[a], #4]\n\t"
         "mov	%[mp], r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [m] "+r" (m), [mp] "+r" (mp)
         :
+#else
+        :
+        : [a] "r" (a), [m] "r" (m), [mp] "r" (mp)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8", "r9",
             "r10", "r11"
     );
@@ -55513,11 +56756,19 @@ static SP_NOINLINE void sp_4096_mont_reduce_128(sp_digit* a_p, const sp_digit* m
  * m   The single precision number representing the modulus.
  * mp  The digit representing the negative inverse of m mod 2^n.
  */
-static SP_NOINLINE void sp_4096_mont_reduce_128(sp_digit* a_p, const sp_digit* m_p, sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_4096_mont_reduce_128(sp_digit* a_p,
+    const sp_digit* m_p, sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_4096_mont_reduce_128(sp_digit* a, const sp_digit* m,
+    sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* m asm ("r1") = (const sp_digit*)m_p;
     register sp_digit mp asm ("r2") = (sp_digit)mp_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldr	r11, [%[m]]\n\t"
@@ -56562,8 +57813,13 @@ static SP_NOINLINE void sp_4096_mont_reduce_128(sp_digit* a_p, const sp_digit* m
         "str	r12, [%[a]]\n\t"
         "str	lr, [%[a], #4]\n\t"
         "mov	%[mp], r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [m] "+r" (m), [mp] "+r" (mp)
         :
+#else
+        :
+        : [a] "r" (a), [m] "r" (m), [mp] "r" (mp)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8", "r9",
             "r10", "r11"
     );
@@ -56577,11 +57833,19 @@ static SP_NOINLINE void sp_4096_mont_reduce_128(sp_digit* a_p, const sp_digit* m
  * m   The single precision number representing the modulus.
  * mp  The digit representing the negative inverse of m mod 2^n.
  */
-static SP_NOINLINE void sp_4096_mont_reduce_128(sp_digit* a_p, const sp_digit* m_p, sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_4096_mont_reduce_128(sp_digit* a_p,
+    const sp_digit* m_p, sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_4096_mont_reduce_128(sp_digit* a, const sp_digit* m,
+    sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* m asm ("r1") = (const sp_digit*)m_p;
     register sp_digit mp asm ("r2") = (sp_digit)mp_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         /* i = 0 */
@@ -57248,8 +58512,13 @@ static SP_NOINLINE void sp_4096_mont_reduce_128(sp_digit* a_p, const sp_digit* m
         "str	r7, [%[a], #12]\n\t"
         "str	r8, [%[a], #16]\n\t"
         "mov	%[mp], lr\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [m] "+r" (m), [mp] "+r" (mp)
         :
+#else
+        :
+        : [a] "r" (a), [m] "r" (m), [mp] "r" (mp)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8", "r9",
             "r10", "r11"
     );
@@ -57294,12 +58563,19 @@ SP_NOINLINE static void sp_4096_mont_sqr_128(sp_digit* r, const sp_digit* a,
  * a  A single precision integer.
  * b  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_4096_sub_128(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* b_p)
+#else
+static sp_digit sp_4096_sub_128(sp_digit* r, const sp_digit* a,
+    const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r12, #0\n\t"
@@ -57318,8 +58594,13 @@ static sp_digit sp_4096_sub_128(sp_digit* r_p, const sp_digit* a_p,
         "cmp	%[a], lr\n\t"
         "bne	L_sp_4096_sub_128_word_%=\n\t"
         "mov	%[r], r12\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
             "r12", "lr"
     );
@@ -57333,12 +58614,19 @@ static sp_digit sp_4096_sub_128(sp_digit* r_p, const sp_digit* a_p,
  * a  A single precision integer.
  * b  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_4096_sub_128(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* b_p)
+#else
+static sp_digit sp_4096_sub_128(sp_digit* r, const sp_digit* a,
+    const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a]!, {r3, r4, r5, r6}\n\t"
@@ -57566,8 +58854,13 @@ static sp_digit sp_4096_sub_128(sp_digit* r_p, const sp_digit* a_p,
         "sbcs	r6, r6, r10\n\t"
         "stm	%[r]!, {r3, r4, r5, r6}\n\t"
         "sbc	%[r], r6, r6\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10"
     );
     return (word32)(size_t)r;
@@ -57584,11 +58877,17 @@ static sp_digit sp_4096_sub_128(sp_digit* r_p, const sp_digit* a_p,
  *
  * Note that this is an approximate div. It may give an answer 1 larger.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit div_4096_word_128(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
+#else
+static sp_digit div_4096_word_128(sp_digit d1, sp_digit d0, sp_digit div)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit d1 asm ("r0") = (sp_digit)d1_p;
     register sp_digit d0 asm ("r1") = (sp_digit)d0_p;
     register sp_digit div asm ("r2") = (sp_digit)div_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "lsr	r6, %[div], #16\n\t"
@@ -57626,8 +58925,13 @@ static sp_digit div_4096_word_128(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
         "sub	%[d0], %[d0], r3\n\t"
         "udiv	r3, %[d0], %[div]\n\t"
         "add	%[d1], r4, r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [d1] "+r" (d1), [d0] "+r" (d0), [div] "+r" (div)
         :
+#else
+        :
+        : [d1] "r" (d1), [d0] "r" (d0), [div] "r" (div)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8"
     );
     return (word32)(size_t)d1;
@@ -57643,11 +58947,17 @@ static sp_digit div_4096_word_128(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
  *
  * Note that this is an approximate div. It may give an answer 1 larger.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit div_4096_word_128(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
+#else
+static sp_digit div_4096_word_128(sp_digit d1, sp_digit d0, sp_digit div)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit d1 asm ("r0") = (sp_digit)d1_p;
     register sp_digit d0 asm ("r1") = (sp_digit)d0_p;
     register sp_digit div asm ("r2") = (sp_digit)div_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "lsr	lr, %[div], #1\n\t"
@@ -57764,8 +59074,13 @@ static sp_digit div_4096_word_128(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
         "subs	r6, %[div], r7\n\t"
         "sbc	r6, r6, r6\n\t"
         "sub	%[d1], r3, r6\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [d1] "+r" (d1), [d0] "+r" (d0), [div] "+r" (div)
         :
+#else
+        :
+        : [d1] "r" (d1), [d0] "r" (d0), [div] "r" (div)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8"
     );
     return (word32)(size_t)d1;
@@ -57883,10 +59198,16 @@ static void sp_4096_mask_128(sp_digit* r, const sp_digit* a, sp_digit m)
  * return -ve, 0 or +ve if a is less than, equal to or greater than b
  * respectively.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_int32 sp_4096_cmp_128(const sp_digit* a_p, const sp_digit* b_p)
+#else
+static sp_int32 sp_4096_cmp_128(const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register const sp_digit* a asm ("r0") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r1") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r2, #-1\n\t"
@@ -59328,8 +60649,13 @@ static sp_int32 sp_4096_cmp_128(const sp_digit* a_p, const sp_digit* b_p)
         "eor	r2, r2, r3\n\t"
 #endif /*WOLFSSL_SP_SMALL */
         "mov	%[a], r2\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r12", "lr", "r4", "r5", "r6"
     );
     return (word32)(size_t)a;
@@ -59861,13 +61187,20 @@ int sp_RsaPublic_4096(const byte* in, word32 inLen, const mp_int* em,
  * b  A single precision number to add.
  * m  Mask value to apply.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_4096_cond_add_64(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* b_p, sp_digit m_p)
+#else
+static sp_digit sp_4096_cond_add_64(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, sp_digit m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
     register sp_digit m asm ("r3") = (sp_digit)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	lr, #0\n\t"
@@ -59886,8 +61219,13 @@ static sp_digit sp_4096_cond_add_64(sp_digit* r_p, const sp_digit* a_p,
         "cmp	r12, #0x100\n\t"
         "blt	L_sp_4096_cond_add_64_words_%=\n\t"
         "mov	%[r], lr\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b), [m] "+r" (m)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b), [m] "r" (m)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r12", "lr", "r4", "r5", "r6"
     );
     return (word32)(size_t)r;
@@ -59902,13 +61240,20 @@ static sp_digit sp_4096_cond_add_64(sp_digit* r_p, const sp_digit* a_p,
  * b  A single precision number to add.
  * m  Mask value to apply.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_4096_cond_add_64(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* b_p, sp_digit m_p)
+#else
+static sp_digit sp_4096_cond_add_64(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, sp_digit m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
     register sp_digit m asm ("r3") = (sp_digit)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r8, #0\n\t"
@@ -60137,8 +61482,13 @@ static sp_digit sp_4096_cond_add_64(sp_digit* r_p, const sp_digit* a_p,
         "adcs	r5, r5, r7\n\t"
         "stm	%[r]!, {r4, r5}\n\t"
         "adc	%[r], r8, r8\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b), [m] "+r" (m)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b), [m] "r" (m)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r12", "lr", "r4", "r5", "r6", "r7", "r8"
     );
     return (word32)(size_t)r;
@@ -60459,11 +61809,17 @@ int sp_ModExp_4096(const mp_int* base, const mp_int* exp, const mp_int* mod,
 #ifdef WOLFSSL_HAVE_SP_DH
 
 #ifdef HAVE_FFDHE_4096
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_4096_lshift_128(sp_digit* r_p, const sp_digit* a_p, byte n_p)
+#else
+static void sp_4096_lshift_128(sp_digit* r, const sp_digit* a, byte n)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register byte n asm ("r2") = (byte)n_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "rsb	r12, %[n], #31\n\t"
@@ -61235,8 +62591,13 @@ static void sp_4096_lshift_128(sp_digit* r_p, const sp_digit* a_p, byte n_p)
         "orr	r5, r5, r3\n\t"
         "str	r4, [%[r]]\n\t"
         "str	r5, [%[r], #4]\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [n] "+r" (n)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [n] "r" (n)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r4", "r5", "r6", "r3", "r12"
     );
 }
@@ -61529,11 +62890,18 @@ static const sp_digit p256_b[8] = {
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static void sp_256_mul_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static void sp_256_mul_8(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static void sp_256_mul_8(sp_digit* r, const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #0x40\n\t"
@@ -61716,8 +63084,13 @@ static void sp_256_mul_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p
         "stm	%[r]!, {r3, r4, r6, r7, r8, r9, r10, r11}\n\t"
         "subs	r5, r5, #32\n\t"
         "bgt	L_sp_256_mul_8_store_%=\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "lr",
             "r11"
     );
@@ -61731,11 +63104,18 @@ static void sp_256_mul_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static void sp_256_mul_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static void sp_256_mul_8(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static void sp_256_mul_8(sp_digit* r, const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #32\n\t"
@@ -63713,8 +65093,13 @@ static void sp_256_mul_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p
         "stm	%[r]!, {r3, r4, r5, r6}\n\t"
         "ldm	sp!, {r3, r4, r5, r6}\n\t"
         "stm	%[r]!, {r3, r4, r5, r6}\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r11",
             "r12"
     );
@@ -63727,11 +65112,18 @@ static void sp_256_mul_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static void sp_256_mul_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static void sp_256_mul_8(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static void sp_256_mul_8(sp_digit* r, const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #36\n\t"
@@ -64067,8 +65459,13 @@ static void sp_256_mul_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p
         "sub	%[r], %[r], #32\n\t"
         "stm	%[r], {r3, r4, r5, r6, r7, r8, r9, r10}\n\t"
         "add	sp, sp, #36\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
             "r11", "r12", "lr"
     );
@@ -64081,11 +65478,18 @@ static void sp_256_mul_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static void sp_256_mul_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static void sp_256_mul_8(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static void sp_256_mul_8(sp_digit* r, const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #44\n\t"
@@ -64199,8 +65603,13 @@ static void sp_256_mul_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p
         "ldm	sp, {r3, r4, r5, r6, r7, r8, r9, r10}\n\t"
         "stm	lr, {r3, r4, r5, r6, r7, r8, r9, r10}\n\t"
         "add	sp, sp, #44\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r10", "r11", "r12", "r7",
             "r8", "r9", "lr"
     );
@@ -64214,10 +65623,16 @@ static void sp_256_mul_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p
  * r  A single precision integer.
  * a  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_256_sqr_8(sp_digit* r_p, const sp_digit* a_p)
+#else
+static void sp_256_sqr_8(sp_digit* r, const sp_digit* a)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #0x40\n\t"
@@ -64360,8 +65775,13 @@ static void sp_256_sqr_8(sp_digit* r_p, const sp_digit* a_p)
         "stm	%[r]!, {r3, r4, r6, r7, r8, r9, r10, r11}\n\t"
         "subs	r5, r5, #32\n\t"
         "bgt	L_sp_256_sqr_8_store_%=\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "lr",
             "r11"
     );
@@ -64374,10 +65794,16 @@ static void sp_256_sqr_8(sp_digit* r_p, const sp_digit* a_p)
  * r  A single precision integer.
  * a  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_256_sqr_8(sp_digit* r_p, const sp_digit* a_p)
+#else
+static void sp_256_sqr_8(sp_digit* r, const sp_digit* a)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #32\n\t"
@@ -65572,8 +66998,13 @@ static void sp_256_sqr_8(sp_digit* r_p, const sp_digit* a_p)
         "stm	%[r]!, {r2, r3, r4, r8}\n\t"
         "ldm	sp!, {r2, r3, r4, r8}\n\t"
         "stm	%[r]!, {r2, r3, r4, r8}\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
             "r12"
     );
@@ -65585,10 +67016,16 @@ static void sp_256_sqr_8(sp_digit* r_p, const sp_digit* a_p)
  * r  A single precision integer.
  * a  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_256_sqr_8(sp_digit* r_p, const sp_digit* a_p)
+#else
+static void sp_256_sqr_8(sp_digit* r, const sp_digit* a)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #0x44\n\t"
@@ -65816,8 +67253,13 @@ static void sp_256_sqr_8(sp_digit* r_p, const sp_digit* a_p)
         "sub	%[r], %[r], #32\n\t"
         "stm	%[r], {r3, r4, r5, r6, r7, r8, r9, r10}\n\t"
         "add	sp, sp, #0x44\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
             "r11", "r12", "lr"
     );
@@ -65829,10 +67271,16 @@ static void sp_256_sqr_8(sp_digit* r_p, const sp_digit* a_p)
  * r  A single precision integer.
  * a  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_256_sqr_8(sp_digit* r_p, const sp_digit* a_p)
+#else
+static void sp_256_sqr_8(sp_digit* r, const sp_digit* a)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #32\n\t"
@@ -65933,8 +67381,13 @@ static void sp_256_sqr_8(sp_digit* r_p, const sp_digit* a_p)
         "ldm	sp, {r0, r1, r2, r3, r4, r5, r6}\n\t"
         "stm	lr, {r0, r1, r2, r3, r4, r5, r6}\n\t"
         "add	sp, sp, #32\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
             "r11", "r12", "lr"
     );
@@ -65949,11 +67402,18 @@ static void sp_256_sqr_8(sp_digit* r_p, const sp_digit* a_p)
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_256_add_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_256_add_8(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_256_add_8(sp_digit* r, const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r3, #0\n\t"
@@ -65973,8 +67433,13 @@ static sp_digit sp_256_add_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit*
         "cmp	%[a], r12\n\t"
         "bne	L_sp_256_add_8_word_%=\n\t"
         "mov	%[r], r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11",
             "r3", "r12"
     );
@@ -65988,11 +67453,18 @@ static sp_digit sp_256_add_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit*
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_256_add_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_256_add_8(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_256_add_8(sp_digit* r, const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a]!, {r3, r4, r5, r6}\n\t"
@@ -66011,8 +67483,13 @@ static sp_digit sp_256_add_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit*
         "stm	%[r]!, {r3, r4, r5, r6}\n\t"
         "mov	%[r], #0\n\t"
         "adc	%[r], %[r], #0\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10"
     );
     return (word32)(size_t)r;
@@ -66025,11 +67502,18 @@ static sp_digit sp_256_add_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit*
  * a  The number to convert.
  * m  The modulus (prime).
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static int sp_256_mod_mul_norm_8(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* m_p)
+#else
+static int sp_256_mod_mul_norm_8(sp_digit* r, const sp_digit* a,
+    const sp_digit* m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #24\n\t"
@@ -66248,12 +67732,21 @@ static int sp_256_mod_mul_norm_8(sp_digit* r_p, const sp_digit* a_p,
         "stm	%[r], {r2, r3, r4, r5, r6, r7, r8, lr}\n\t"
         "mov	%[r], #0\n\t"
         "add	sp, sp, #24\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r12",
             "lr", "r10"
     );
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     (void)m_p;
+#else
+    (void)m;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
     return (word32)(size_t)r;
 }
 
@@ -66462,12 +67955,19 @@ static int sp_256_point_to_ecc_point_8(const sp_point_256* p, ecc_point* pm)
  * m   Modulus (prime).
  * mp  Montgomery multiplier.
  */
-static SP_NOINLINE void sp_256_mont_mul_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p,
-    const sp_digit* m_p, sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_256_mont_mul_8(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p, const sp_digit* m_p, sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_256_mont_mul_8(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, const sp_digit* m, sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #0x44\n\t"
@@ -68565,13 +70065,26 @@ static SP_NOINLINE void sp_256_mont_mul_8(sp_digit* r_p, const sp_digit* a_p, co
         "ldr	%[r], [sp, #64]\n\t"
         "stm	%[r], {r1, r2, r3, r4, r5, r6, r7, r8}\n\t"
         "add	sp, sp, #0x44\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "lr",
             "r12"
     );
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     (void)m_p;
+#else
+    (void)m;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     (void)mp_p;
+#else
+    (void)mp;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 }
 
 #elif defined(WOLFSSL_ARM_ARCH) && (WOLFSSL_ARM_ARCH < 7)
@@ -68584,12 +70097,19 @@ static SP_NOINLINE void sp_256_mont_mul_8(sp_digit* r_p, const sp_digit* a_p, co
  * m   Modulus (prime).
  * mp  Montgomery multiplier.
  */
-static SP_NOINLINE void sp_256_mont_mul_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p,
-    const sp_digit* m_p, sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_256_mont_mul_8(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p, const sp_digit* m_p, sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_256_mont_mul_8(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, const sp_digit* m, sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #0x44\n\t"
@@ -69044,13 +70564,26 @@ static SP_NOINLINE void sp_256_mont_mul_8(sp_digit* r_p, const sp_digit* a_p, co
         "ldr	%[r], [sp, #64]\n\t"
         "stm	%[r], {r1, r2, r3, r4, r5, r6, r7, r8}\n\t"
         "add	sp, sp, #0x44\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
             "r11", "r12", "lr"
     );
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     (void)m_p;
+#else
+    (void)m;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     (void)mp_p;
+#else
+    (void)mp;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 }
 
 #else
@@ -69063,12 +70596,19 @@ static SP_NOINLINE void sp_256_mont_mul_8(sp_digit* r_p, const sp_digit* a_p, co
  * m   Modulus (prime).
  * mp  Montgomery multiplier.
  */
-static SP_NOINLINE void sp_256_mont_mul_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p,
-    const sp_digit* m_p, sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_256_mont_mul_8(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p, const sp_digit* m_p, sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_256_mont_mul_8(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, const sp_digit* m, sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #0x4c\n\t"
@@ -69301,13 +70841,26 @@ static SP_NOINLINE void sp_256_mont_mul_8(sp_digit* r_p, const sp_digit* a_p, co
         "ldr	%[r], [sp, #68]\n\t"
         "stm	%[r], {r1, r2, r3, r4, r5, r6, r7, r8}\n\t"
         "add	sp, sp, #0x4c\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r10", "r11", "r12", "r7",
             "r8", "r9", "lr"
     );
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     (void)m_p;
+#else
+    (void)m;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     (void)mp_p;
+#else
+    (void)mp;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 }
 
 #endif
@@ -69319,11 +70872,18 @@ static SP_NOINLINE void sp_256_mont_mul_8(sp_digit* r_p, const sp_digit* a_p, co
  * m   Modulus (prime).
  * mp  Montgomery multiplier.
  */
-static SP_NOINLINE void sp_256_mont_sqr_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* m_p,
-    sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_256_mont_sqr_8(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* m_p, sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_256_mont_sqr_8(sp_digit* r, const sp_digit* a,
+    const sp_digit* m, sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #0x44\n\t"
@@ -70501,13 +72061,26 @@ static SP_NOINLINE void sp_256_mont_sqr_8(sp_digit* r_p, const sp_digit* a_p, co
         "ldr	%[r], [sp, #64]\n\t"
         "stm	%[r], {r1, r2, r3, r4, r5, r6, r7, r8}\n\t"
         "add	sp, sp, #0x44\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r4", "r5", "r6", "r7", "r12", "r8", "r9",
             "r10", "lr"
     );
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     (void)m_p;
+#else
+    (void)m;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     (void)mp_p;
+#else
+    (void)mp;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 }
 
 #elif defined(WOLFSSL_ARM_ARCH) && (WOLFSSL_ARM_ARCH < 7)
@@ -70518,11 +72091,18 @@ static SP_NOINLINE void sp_256_mont_sqr_8(sp_digit* r_p, const sp_digit* a_p, co
  * m   Modulus (prime).
  * mp  Montgomery multiplier.
  */
-static SP_NOINLINE void sp_256_mont_sqr_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* m_p,
-    sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_256_mont_sqr_8(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* m_p, sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_256_mont_sqr_8(sp_digit* r, const sp_digit* a,
+    const sp_digit* m, sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #0x44\n\t"
@@ -70869,13 +72449,26 @@ static SP_NOINLINE void sp_256_mont_sqr_8(sp_digit* r_p, const sp_digit* a_p, co
         "ldr	%[r], [sp, #64]\n\t"
         "stm	%[r], {r1, r2, r3, r4, r5, r6, r7, r8}\n\t"
         "add	sp, sp, #0x44\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
             "r11", "r12", "lr"
     );
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     (void)m_p;
+#else
+    (void)m;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     (void)mp_p;
+#else
+    (void)mp;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 }
 
 #else
@@ -70886,11 +72479,18 @@ static SP_NOINLINE void sp_256_mont_sqr_8(sp_digit* r_p, const sp_digit* a_p, co
  * m   Modulus (prime).
  * mp  Montgomery multiplier.
  */
-static SP_NOINLINE void sp_256_mont_sqr_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* m_p,
-    sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_256_mont_sqr_8(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* m_p, sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_256_mont_sqr_8(sp_digit* r, const sp_digit* a,
+    const sp_digit* m, sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #0x44\n\t"
@@ -71111,13 +72711,26 @@ static SP_NOINLINE void sp_256_mont_sqr_8(sp_digit* r_p, const sp_digit* a_p, co
         "ldr	%[r], [sp, #64]\n\t"
         "stm	%[r], {r1, r2, r3, r4, r5, r6, r7, r8}\n\t"
         "add	sp, sp, #0x44\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
             "r11", "r12", "lr"
     );
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     (void)m_p;
+#else
+    (void)m;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     (void)mp_p;
+#else
+    (void)mp;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 }
 
 #endif
@@ -71224,10 +72837,16 @@ static void sp_256_mont_inv_8(sp_digit* r, const sp_digit* a, sp_digit* td)
  * return -ve, 0 or +ve if a is less than, equal to or greater than b
  * respectively.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_int32 sp_256_cmp_8(const sp_digit* a_p, const sp_digit* b_p)
+#else
+static sp_int32 sp_256_cmp_8(const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register const sp_digit* a asm ("r0") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r1") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r2, #-1\n\t"
@@ -71344,8 +72963,13 @@ static sp_int32 sp_256_cmp_8(const sp_digit* a_p, const sp_digit* b_p)
         "eor	r2, r2, r3\n\t"
 #endif /*WOLFSSL_SP_SMALL */
         "mov	%[a], r2\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r12", "lr", "r4", "r5", "r6"
     );
     return (word32)(size_t)a;
@@ -71366,13 +72990,20 @@ static sp_int32 sp_256_cmp_8(const sp_digit* a_p, const sp_digit* b_p)
  * b  A single precision number to subtract.
  * m  Mask value to apply.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_256_cond_sub_8(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* b_p, sp_digit m_p)
+#else
+static sp_digit sp_256_cond_sub_8(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, sp_digit m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
     register sp_digit m asm ("r3") = (sp_digit)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r6, #0\n\t"
@@ -71391,8 +73022,13 @@ static sp_digit sp_256_cond_sub_8(sp_digit* r_p, const sp_digit* a_p,
         "cmp	lr, #32\n\t"
         "blt	L_sp_256_cond_sub_8_words_%=\n\t"
         "mov	%[r], r12\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b), [m] "+r" (m)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b), [m] "r" (m)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r12", "lr", "r4", "r5", "r6"
     );
     return (word32)(size_t)r;
@@ -71407,13 +73043,20 @@ static sp_digit sp_256_cond_sub_8(sp_digit* r_p, const sp_digit* a_p,
  * b  A single precision number to subtract.
  * m  Mask value to apply.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_256_cond_sub_8(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* b_p, sp_digit m_p)
+#else
+static sp_digit sp_256_cond_sub_8(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, sp_digit m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
     register sp_digit m asm ("r3") = (sp_digit)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	lr, #0\n\t"
@@ -71446,8 +73089,13 @@ static sp_digit sp_256_cond_sub_8(sp_digit* r_p, const sp_digit* a_p,
         "sbcs	r5, r5, r7\n\t"
         "stm	%[r]!, {r4, r5}\n\t"
         "sbc	%[r], lr, lr\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b), [m] "+r" (m)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b), [m] "r" (m)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r12", "lr", "r4", "r5", "r6", "r7"
     );
     return (word32)(size_t)r;
@@ -71464,11 +73112,19 @@ static sp_digit sp_256_cond_sub_8(sp_digit* r_p, const sp_digit* a_p,
  * m   The single precision number representing the modulus.
  * mp  The digit representing the negative inverse of m mod 2^n.
  */
-static SP_NOINLINE void sp_256_mont_reduce_8(sp_digit* a_p, const sp_digit* m_p, sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_256_mont_reduce_8(sp_digit* a_p, const sp_digit* m_p,
+    sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_256_mont_reduce_8(sp_digit* a, const sp_digit* m,
+    sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* m asm ("r1") = (const sp_digit*)m_p;
     register sp_digit mp asm ("r2") = (sp_digit)mp_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
 #if !(defined(WOLFSSL_ARM_ARCH) && (WOLFSSL_ARM_ARCH < 4))
@@ -71734,8 +73390,13 @@ static SP_NOINLINE void sp_256_mont_reduce_8(sp_digit* a_p, const sp_digit* m_p,
         "str	r12, [%[a]]\n\t"
         "str	lr, [%[a], #4]\n\t"
         "mov	%[mp], r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [m] "+r" (m), [mp] "+r" (mp)
         :
+#else
+        :
+        : [a] "r" (a), [m] "r" (m), [mp] "r" (mp)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8", "r9",
             "r10", "r11"
     );
@@ -71749,11 +73410,19 @@ static SP_NOINLINE void sp_256_mont_reduce_8(sp_digit* a_p, const sp_digit* m_p,
  * m   The single precision number representing the modulus.
  * mp  The digit representing the negative inverse of m mod 2^n.
  */
-static SP_NOINLINE void sp_256_mont_reduce_8(sp_digit* a_p, const sp_digit* m_p, sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_256_mont_reduce_8(sp_digit* a_p, const sp_digit* m_p,
+    sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_256_mont_reduce_8(sp_digit* a, const sp_digit* m,
+    sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* m asm ("r1") = (const sp_digit*)m_p;
     register sp_digit mp asm ("r2") = (sp_digit)mp_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldr	r11, [%[m]]\n\t"
@@ -71838,8 +73507,13 @@ static SP_NOINLINE void sp_256_mont_reduce_8(sp_digit* a_p, const sp_digit* m_p,
         "str	r12, [%[a]]\n\t"
         "str	lr, [%[a], #4]\n\t"
         "mov	%[mp], r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [m] "+r" (m), [mp] "+r" (mp)
         :
+#else
+        :
+        : [a] "r" (a), [m] "r" (m), [mp] "r" (mp)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8", "r9",
             "r10", "r11"
     );
@@ -71853,11 +73527,19 @@ static SP_NOINLINE void sp_256_mont_reduce_8(sp_digit* a_p, const sp_digit* m_p,
  * m   The single precision number representing the modulus.
  * mp  The digit representing the negative inverse of m mod 2^n.
  */
-static SP_NOINLINE void sp_256_mont_reduce_8(sp_digit* a_p, const sp_digit* m_p, sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_256_mont_reduce_8(sp_digit* a_p, const sp_digit* m_p,
+    sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_256_mont_reduce_8(sp_digit* a, const sp_digit* m,
+    sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* m asm ("r1") = (const sp_digit*)m_p;
     register sp_digit mp asm ("r2") = (sp_digit)mp_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         /* i = 0 */
@@ -71924,8 +73606,13 @@ static SP_NOINLINE void sp_256_mont_reduce_8(sp_digit* a_p, const sp_digit* m_p,
         "str	r7, [%[a], #12]\n\t"
         "str	r8, [%[a], #16]\n\t"
         "mov	%[mp], lr\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [m] "+r" (m), [mp] "+r" (mp)
         :
+#else
+        :
+        : [a] "r" (a), [m] "r" (m), [mp] "r" (mp)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8", "r9",
             "r10", "r11"
     );
@@ -71940,9 +73627,17 @@ static SP_NOINLINE void sp_256_mont_reduce_8(sp_digit* a_p, const sp_digit* m_p,
  * m   The single precision number representing the modulus.
  * mp  The digit representing the negative inverse of m mod 2^n.
  */
-static SP_NOINLINE void sp_256_mont_reduce_8(sp_digit* a_p, const sp_digit* m_p, sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_256_mont_reduce_8(sp_digit* a_p, const sp_digit* m_p,
+    sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_256_mont_reduce_8(sp_digit* a, const sp_digit* m,
+    sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #0x44\n\t"
@@ -72076,13 +73771,26 @@ static SP_NOINLINE void sp_256_mont_reduce_8(sp_digit* a_p, const sp_digit* m_p,
         "ldr	%[a], [sp, #64]\n\t"
         "stm	%[a], {r1, r2, r3, r4, r5, r6, r7, r8}\n\t"
         "add	sp, sp, #0x44\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a)
         :
+#else
+        :
+        : [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9",
             "r10", "r11", "r12", "lr"
     );
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     (void)m_p;
+#else
+    (void)m;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     (void)mp_p;
+#else
+    (void)mp;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 }
 
 #if defined(WOLFSSL_ARM_ARCH) && (WOLFSSL_ARM_ARCH < 4)
@@ -72092,12 +73800,19 @@ static SP_NOINLINE void sp_256_mont_reduce_8(sp_digit* a_p, const sp_digit* m_p,
  * m   The single precision number representing the modulus.
  * mp  The digit representing the negative inverse of m mod 2^n.
  */
-static SP_NOINLINE void sp_256_mont_reduce_order_8(sp_digit* a_p, const sp_digit* m_p,
-    sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_256_mont_reduce_order_8(sp_digit* a_p,
+    const sp_digit* m_p, sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_256_mont_reduce_order_8(sp_digit* a,
+    const sp_digit* m, sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* m asm ("r1") = (const sp_digit*)m_p;
     register sp_digit mp asm ("r2") = (sp_digit)mp_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
 #if !(defined(WOLFSSL_ARM_ARCH) && (WOLFSSL_ARM_ARCH < 4))
@@ -72363,8 +74078,13 @@ static SP_NOINLINE void sp_256_mont_reduce_order_8(sp_digit* a_p, const sp_digit
         "str	r12, [%[a]]\n\t"
         "str	lr, [%[a], #4]\n\t"
         "mov	%[mp], r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [m] "+r" (m), [mp] "+r" (mp)
         :
+#else
+        :
+        : [a] "r" (a), [m] "r" (m), [mp] "r" (mp)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8", "r9",
             "r10", "r11"
     );
@@ -72378,12 +74098,19 @@ static SP_NOINLINE void sp_256_mont_reduce_order_8(sp_digit* a_p, const sp_digit
  * m   The single precision number representing the modulus.
  * mp  The digit representing the negative inverse of m mod 2^n.
  */
-static SP_NOINLINE void sp_256_mont_reduce_order_8(sp_digit* a_p, const sp_digit* m_p,
-    sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_256_mont_reduce_order_8(sp_digit* a_p,
+    const sp_digit* m_p, sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_256_mont_reduce_order_8(sp_digit* a,
+    const sp_digit* m, sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* m asm ("r1") = (const sp_digit*)m_p;
     register sp_digit mp asm ("r2") = (sp_digit)mp_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldr	r11, [%[m]]\n\t"
@@ -72468,8 +74195,13 @@ static SP_NOINLINE void sp_256_mont_reduce_order_8(sp_digit* a_p, const sp_digit
         "str	r12, [%[a]]\n\t"
         "str	lr, [%[a], #4]\n\t"
         "mov	%[mp], r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [m] "+r" (m), [mp] "+r" (mp)
         :
+#else
+        :
+        : [a] "r" (a), [m] "r" (m), [mp] "r" (mp)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8", "r9",
             "r10", "r11"
     );
@@ -72483,12 +74215,19 @@ static SP_NOINLINE void sp_256_mont_reduce_order_8(sp_digit* a_p, const sp_digit
  * m   The single precision number representing the modulus.
  * mp  The digit representing the negative inverse of m mod 2^n.
  */
-static SP_NOINLINE void sp_256_mont_reduce_order_8(sp_digit* a_p, const sp_digit* m_p,
-    sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_256_mont_reduce_order_8(sp_digit* a_p,
+    const sp_digit* m_p, sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_256_mont_reduce_order_8(sp_digit* a,
+    const sp_digit* m, sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* m asm ("r1") = (const sp_digit*)m_p;
     register sp_digit mp asm ("r2") = (sp_digit)mp_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         /* i = 0 */
@@ -72555,8 +74294,13 @@ static SP_NOINLINE void sp_256_mont_reduce_order_8(sp_digit* a_p, const sp_digit
         "str	r7, [%[a], #12]\n\t"
         "str	r8, [%[a], #16]\n\t"
         "mov	%[mp], lr\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [m] "+r" (m), [mp] "+r" (mp)
         :
+#else
+        :
+        : [a] "r" (a), [m] "r" (m), [mp] "r" (mp)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8", "r9",
             "r10", "r11"
     );
@@ -72612,12 +74356,19 @@ static void sp_256_map_8(sp_point_256* r, const sp_point_256* p,
  * b   Second number to add in Montgomery form.
  * m   Modulus (prime).
  */
-static void sp_256_mont_add_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p,
-    const sp_digit* m_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static void sp_256_mont_add_8(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p, const sp_digit* m_p)
+#else
+static void sp_256_mont_add_8(sp_digit* r, const sp_digit* a, const sp_digit* b,
+    const sp_digit* m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	lr, #0\n\t"
@@ -72655,12 +74406,21 @@ static void sp_256_mont_add_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit
         "sbcs	r11, r11, lr, lsr #31\n\t"
         "sbc	r12, r12, lr\n\t"
         "stm	%[r], {r5, r6, r7, r8, r9, r10, r11, r12}\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
             "r11", "r12", "lr"
     );
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     (void)m_p;
+#else
+    (void)m;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 }
 
 /* Double a Montgomery form number (r = a + a % m).
@@ -72669,10 +74429,17 @@ static void sp_256_mont_add_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit
  * a   Number to double in Montgomery form.
  * m   Modulus (prime).
  */
-static void sp_256_mont_dbl_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* m_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static void sp_256_mont_dbl_8(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* m_p)
+#else
+static void sp_256_mont_dbl_8(sp_digit* r, const sp_digit* a, const sp_digit* m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r2, #0\n\t"
@@ -72706,12 +74473,21 @@ static void sp_256_mont_dbl_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit
         "sbcs	r10, r10, r2, lsr #31\n\t"
         "sbc	r11, r11, r2\n\t"
         "stm	%[r], {r4, r5, r6, r7, r8, r9, r10, r11}\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11",
             "r2"
     );
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     (void)m_p;
+#else
+    (void)m;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 }
 
 /* Triple a Montgomery form number (r = a + a + a % m).
@@ -72720,10 +74496,17 @@ static void sp_256_mont_dbl_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit
  * a   Number to triple in Montgomery form.
  * m   Modulus (prime).
  */
-static void sp_256_mont_tpl_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* m_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static void sp_256_mont_tpl_8(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* m_p)
+#else
+static void sp_256_mont_tpl_8(sp_digit* r, const sp_digit* a, const sp_digit* m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r12, #0\n\t"
@@ -72789,12 +74572,21 @@ static void sp_256_mont_tpl_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit
         "sbcs	r10, r10, r12, lsr #31\n\t"
         "sbc	r11, r11, r12\n\t"
         "stm	%[r], {r4, r5, r6, r7, r8, r9, r10, r11}\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11",
             "r2", "r3", "r12"
     );
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     (void)m_p;
+#else
+    (void)m;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 }
 
 /* Subtract two Montgomery form numbers (r = a - b % m).
@@ -72804,12 +74596,19 @@ static void sp_256_mont_tpl_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit
  * b   Number to subtract with in Montgomery form.
  * m   Modulus (prime).
  */
-static void sp_256_mont_sub_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p,
-    const sp_digit* m_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static void sp_256_mont_sub_8(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p, const sp_digit* m_p)
+#else
+static void sp_256_mont_sub_8(sp_digit* r, const sp_digit* a, const sp_digit* b,
+    const sp_digit* m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	lr, #0\n\t"
@@ -72845,12 +74644,21 @@ static void sp_256_mont_sub_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit
         "adcs	r11, r11, lr, lsr #31\n\t"
         "adc	r12, r12, lr\n\t"
         "stm	%[r], {r5, r6, r7, r8, r9, r10, r11, r12}\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
             "r11", "r12", "lr"
     );
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     (void)m_p;
+#else
+    (void)m;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 }
 
 /* Divide the number by 2 mod the modulus (prime). (r = a / 2 % m)
@@ -72859,11 +74667,19 @@ static void sp_256_mont_sub_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit
  * a  Number to divide.
  * m  Modulus (prime).
  */
-static void sp_256_mont_div2_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* m_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static void sp_256_mont_div2_8(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* m_p)
+#else
+static void sp_256_mont_div2_8(sp_digit* r, const sp_digit* a,
+    const sp_digit* m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* m asm ("r2") = (const sp_digit*)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a], {r4, r5, r6, r7}\n\t"
@@ -72923,8 +74739,13 @@ static void sp_256_mont_div2_8(sp_digit* r_p, const sp_digit* a_p, const sp_digi
         "orr	r10, r10, r7, lsl #31\n\t"
         "orr	r11, r11, r3, lsl #31\n\t"
         "stm	%[r], {r8, r9, r10, r11}\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [m] "+r" (m)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [m] "r" (m)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11",
             "r3"
     );
@@ -76432,9 +78253,15 @@ int sp_ecc_mulmod_base_add_256(const mp_int* km, const ecc_point* am,
  *
  * a  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_256_add_one_8(sp_digit* a_p)
+#else
+static void sp_256_add_one_8(sp_digit* a)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a], {r1, r2, r3, r4}\n\t"
@@ -76449,8 +78276,13 @@ static void sp_256_add_one_8(sp_digit* a_p)
         "adcs	r3, r3, #0\n\t"
         "adcs	r4, r4, #0\n\t"
         "stm	%[a]!, {r1, r2, r3, r4}\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a)
         :
+#else
+        :
+        : [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r1", "r2", "r3", "r4"
     );
 }
@@ -76489,9 +78321,9 @@ static void sp_256_from_bin(sp_digit* r, int size, const byte* a, int n)
         }
 #else
         switch (i) {
-            case 2: d[2] = a[2]; //fallthrough
-            case 1: d[1] = a[1]; //fallthrough
-            case 0: d[0] = a[0]; //fallthrough
+            case 2: d[i-2] = a[2]; //fallthrough
+            case 1: d[i-1] = a[1]; //fallthrough
+            case 0: d[i-0] = a[0]; //fallthrough
         }
 #endif
         j++;
@@ -76840,10 +78672,16 @@ int sp_ecc_secret_gen_256_nb(sp_ecc_ctx_t* sp_ctx, const mp_int* priv,
  * a  A single precision integer.
  * b  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_256_sub_in_place_8(sp_digit* a_p, const sp_digit* b_p)
+#else
+static sp_digit sp_256_sub_in_place_8(sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* b asm ("r1") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r12, #0\n\t"
@@ -76862,8 +78700,13 @@ static sp_digit sp_256_sub_in_place_8(sp_digit* a_p, const sp_digit* b_p)
         "cmp	%[a], lr\n\t"
         "bne	L_sp_256_sub_in_pkace_8_word_%=\n\t"
         "mov	%[a], r12\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r12",
             "lr"
     );
@@ -76876,10 +78719,16 @@ static sp_digit sp_256_sub_in_place_8(sp_digit* a_p, const sp_digit* b_p)
  * a  A single precision integer and result.
  * b  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_256_sub_in_place_8(sp_digit* a_p, const sp_digit* b_p)
+#else
+static sp_digit sp_256_sub_in_place_8(sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* b asm ("r1") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a], {r2, r3, r4, r5}\n\t"
@@ -76897,8 +78746,13 @@ static sp_digit sp_256_sub_in_place_8(sp_digit* a_p, const sp_digit* b_p)
         "sbcs	r5, r5, r9\n\t"
         "stm	%[a]!, {r2, r3, r4, r5}\n\t"
         "sbc	%[a], r9, r9\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9"
     );
     return (word32)(size_t)a;
@@ -76912,11 +78766,17 @@ static sp_digit sp_256_sub_in_place_8(sp_digit* a_p, const sp_digit* b_p)
  * a  A single precision integer.
  * b  A single precision digit.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_256_mul_d_8(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
+#else
+static void sp_256_mul_d_8(sp_digit* r, const sp_digit* a, sp_digit b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register sp_digit b asm ("r2") = (sp_digit)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         /* A[0] * B */
@@ -76997,8 +78857,13 @@ static void sp_256_mul_d_8(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
         "cmp	r9, #32\n\t"
         "blt	L_sp_256_mul_d_8_word_%=\n\t"
         "str	r3, [%[r], #32]\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9"
     );
 }
@@ -77010,11 +78875,17 @@ static void sp_256_mul_d_8(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
  * a  A single precision integer.
  * b  A single precision digit.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_256_mul_d_8(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
+#else
+static void sp_256_mul_d_8(sp_digit* r, const sp_digit* a, sp_digit b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register sp_digit b asm ("r2") = (sp_digit)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         /* A[0] * B */
@@ -77270,8 +79141,13 @@ static void sp_256_mul_d_8(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
 #endif
         "stm	%[r]!, {r4}\n\t"
         "str	r5, [%[r]]\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8"
     );
 }
@@ -77287,11 +79163,17 @@ static void sp_256_mul_d_8(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
  *
  * Note that this is an approximate div. It may give an answer 1 larger.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit div_256_word_8(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
+#else
+static sp_digit div_256_word_8(sp_digit d1, sp_digit d0, sp_digit div)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit d1 asm ("r0") = (sp_digit)d1_p;
     register sp_digit d0 asm ("r1") = (sp_digit)d0_p;
     register sp_digit div asm ("r2") = (sp_digit)div_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "lsr	r6, %[div], #16\n\t"
@@ -77329,8 +79211,13 @@ static sp_digit div_256_word_8(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
         "sub	%[d0], %[d0], r3\n\t"
         "udiv	r3, %[d0], %[div]\n\t"
         "add	%[d1], r4, r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [d1] "+r" (d1), [d0] "+r" (d0), [div] "+r" (div)
         :
+#else
+        :
+        : [d1] "r" (d1), [d0] "r" (d0), [div] "r" (div)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8"
     );
     return (word32)(size_t)d1;
@@ -77346,11 +79233,17 @@ static sp_digit div_256_word_8(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
  *
  * Note that this is an approximate div. It may give an answer 1 larger.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit div_256_word_8(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
+#else
+static sp_digit div_256_word_8(sp_digit d1, sp_digit d0, sp_digit div)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit d1 asm ("r0") = (sp_digit)d1_p;
     register sp_digit d0 asm ("r1") = (sp_digit)d0_p;
     register sp_digit div asm ("r2") = (sp_digit)div_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "lsr	lr, %[div], #1\n\t"
@@ -77467,8 +79360,13 @@ static sp_digit div_256_word_8(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
         "subs	r6, %[div], r7\n\t"
         "sbc	r6, r6, r6\n\t"
         "sub	%[d1], r3, r6\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [d1] "+r" (d1), [d0] "+r" (d0), [div] "+r" (div)
         :
+#else
+        :
+        : [d1] "r" (d1), [d0] "r" (d0), [div] "r" (div)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8"
     );
     return (word32)(size_t)d1;
@@ -78128,11 +80026,18 @@ int sp_ecc_sign_256_nb(sp_ecc_ctx_t* sp_ctx, const byte* hash, word32 hashLen, W
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_256_sub_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_256_sub_8(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_256_sub_8(sp_digit* r, const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r12, #0\n\t"
@@ -78151,8 +80056,13 @@ static sp_digit sp_256_sub_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit*
         "cmp	%[a], lr\n\t"
         "bne	L_sp_256_sub_8_word_%=\n\t"
         "mov	%[r], r12\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
             "r12", "lr"
     );
@@ -78166,11 +80076,18 @@ static sp_digit sp_256_sub_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit*
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_256_sub_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_256_sub_8(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_256_sub_8(sp_digit* r, const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a]!, {r3, r4, r5, r6}\n\t"
@@ -78188,18 +80105,29 @@ static sp_digit sp_256_sub_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit*
         "sbcs	r6, r6, r10\n\t"
         "stm	%[r]!, {r3, r4, r5, r6}\n\t"
         "sbc	%[r], r6, r6\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10"
     );
     return (word32)(size_t)r;
 }
 
 #endif /* WOLFSSL_SP_SMALL */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_256_rshift1_8(sp_digit* r_p, const sp_digit* a_p)
+#else
+static void sp_256_rshift1_8(sp_digit* r, const sp_digit* a)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r12, #0\n\t"
@@ -78266,8 +80194,13 @@ static void sp_256_rshift1_8(sp_digit* r_p, const sp_digit* a_p)
 #else
         "strd	r8, r9, [%[r], #8]\n\t"
 #endif
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r12",
             "lr", "r10"
     );
@@ -78279,11 +80212,18 @@ static void sp_256_rshift1_8(sp_digit* r_p, const sp_digit* a_p)
  * a  Number to divide.
  * m  Modulus.
  */
-static void sp_256_div2_mod_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit* m_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static void sp_256_div2_mod_8(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* m_p)
+#else
+static void sp_256_div2_mod_8(sp_digit* r, const sp_digit* a, const sp_digit* m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* m asm ("r2") = (const sp_digit*)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r12, #0\n\t"
@@ -78353,8 +80293,13 @@ static void sp_256_div2_mod_8(sp_digit* r_p, const sp_digit* a_p, const sp_digit
         "orr	r10, r10, r7, lsl #31\n\t"
         "orr	r11, r11, r3, lsl #31\n\t"
         "stm	%[r], {r8, r9, r10, r11}\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [m] "+r" (m)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [m] "r" (m)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11",
             "r3", "r12"
     );
@@ -78396,11 +80341,21 @@ static const byte L_sp_256_num_bits_8_table[] = {
     0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
 };
 
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static int sp_256_num_bits_8(const sp_digit* a_p)
+#else
+static int sp_256_num_bits_8(const sp_digit* a)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register const sp_digit* a asm ("r0") = (const sp_digit*)a_p;
     register byte* L_sp_256_num_bits_8_table_c asm ("r1") =
         (byte*)&L_sp_256_num_bits_8_table;
+#else
+    register byte* L_sp_256_num_bits_8_table_c =
+        (byte*)&L_sp_256_num_bits_8_table;
+
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	lr, %[L_sp_256_num_bits_8_table]\n\t"
@@ -78712,18 +80667,30 @@ static int sp_256_num_bits_8(const sp_digit* a_p)
         "\n"
     "L_sp_256_num_bits_8_9_%=: \n\t"
         "mov	%[a], r12\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a),
           [L_sp_256_num_bits_8_table] "+r" (L_sp_256_num_bits_8_table_c)
         :
+#else
+        :
+        : [a] "r" (a),
+          [L_sp_256_num_bits_8_table] "r" (L_sp_256_num_bits_8_table_c)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r12", "lr"
     );
     return (word32)(size_t)a;
 }
 
 #else
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static int sp_256_num_bits_8(const sp_digit* a_p)
+#else
+static int sp_256_num_bits_8(const sp_digit* a)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register const sp_digit* a asm ("r0") = (const sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldr	r1, [%[a], #28]\n\t"
@@ -78796,8 +80763,13 @@ static int sp_256_num_bits_8(const sp_digit* a_p)
         "\n"
     "L_sp_256_num_bits_8_9_%=: \n\t"
         "mov	%[a], r12\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a)
         :
+#else
+        :
+        : [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r1", "r2", "r3", "r12", "lr"
     );
     return (word32)(size_t)a;
@@ -79882,11 +81854,18 @@ static const sp_digit p384_b[12] = {
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static void sp_384_mul_12(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static void sp_384_mul_12(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static void sp_384_mul_12(sp_digit* r, const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #0x60\n\t"
@@ -80069,8 +82048,13 @@ static void sp_384_mul_12(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_
         "stm	%[r]!, {r3, r4, r6, r7, r8, r9, r10, r11}\n\t"
         "subs	r5, r5, #32\n\t"
         "bgt	L_sp_384_mul_12_store_%=\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "lr",
             "r11"
     );
@@ -80083,11 +82067,18 @@ static void sp_384_mul_12(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static void sp_384_mul_12(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static void sp_384_mul_12(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static void sp_384_mul_12(sp_digit* r, const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #48\n\t"
@@ -85567,8 +87558,13 @@ static void sp_384_mul_12(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_
         "stm	%[r]!, {r3, r4, r5, r6}\n\t"
         "ldm	sp!, {r3, r4, r5, r6}\n\t"
         "stm	%[r]!, {r3, r4, r5, r6}\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r11",
             "r12"
     );
@@ -85581,10 +87577,16 @@ static void sp_384_mul_12(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_
  * r  A single precision integer.
  * a  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_384_sqr_12(sp_digit* r_p, const sp_digit* a_p)
+#else
+static void sp_384_sqr_12(sp_digit* r, const sp_digit* a)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #0x60\n\t"
@@ -85727,8 +87729,13 @@ static void sp_384_sqr_12(sp_digit* r_p, const sp_digit* a_p)
         "stm	%[r]!, {r3, r4, r6, r7, r8, r9, r10, r11}\n\t"
         "subs	r5, r5, #32\n\t"
         "bgt	L_sp_384_sqr_12_store_%=\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "lr",
             "r11"
     );
@@ -85740,10 +87747,16 @@ static void sp_384_sqr_12(sp_digit* r_p, const sp_digit* a_p)
  * r  A single precision integer.
  * a  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_384_sqr_12(sp_digit* r_p, const sp_digit* a_p)
+#else
+static void sp_384_sqr_12(sp_digit* r, const sp_digit* a)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #48\n\t"
@@ -88791,8 +90804,13 @@ static void sp_384_sqr_12(sp_digit* r_p, const sp_digit* a_p)
         "stm	%[r]!, {r2, r3, r4, r8}\n\t"
         "ldm	sp!, {r2, r3, r4, r8}\n\t"
         "stm	%[r]!, {r2, r3, r4, r8}\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
             "r12"
     );
@@ -88806,11 +90824,18 @@ static void sp_384_sqr_12(sp_digit* r_p, const sp_digit* a_p)
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_384_add_12(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_384_add_12(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_384_add_12(sp_digit* r, const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r3, #0\n\t"
@@ -88830,8 +90855,13 @@ static sp_digit sp_384_add_12(sp_digit* r_p, const sp_digit* a_p, const sp_digit
         "cmp	%[a], r12\n\t"
         "bne	L_sp_384_add_12_word_%=\n\t"
         "mov	%[r], r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11",
             "r3", "r12"
     );
@@ -88845,11 +90875,18 @@ static sp_digit sp_384_add_12(sp_digit* r_p, const sp_digit* a_p, const sp_digit
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_384_add_12(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_384_add_12(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_384_add_12(sp_digit* r, const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a]!, {r3, r4, r5, r6}\n\t"
@@ -88875,8 +90912,13 @@ static sp_digit sp_384_add_12(sp_digit* r_p, const sp_digit* a_p, const sp_digit
         "stm	%[r]!, {r3, r4, r5, r6}\n\t"
         "mov	%[r], #0\n\t"
         "adc	%[r], %[r], #0\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10"
     );
     return (word32)(size_t)r;
@@ -89188,13 +91230,20 @@ static int sp_384_point_to_ecc_point_12(const sp_point_384* p, ecc_point* pm)
  * b  A single precision number to subtract.
  * m  Mask value to apply.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_384_cond_sub_12(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* b_p, sp_digit m_p)
+#else
+static sp_digit sp_384_cond_sub_12(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, sp_digit m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
     register sp_digit m asm ("r3") = (sp_digit)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r6, #0\n\t"
@@ -89213,8 +91262,13 @@ static sp_digit sp_384_cond_sub_12(sp_digit* r_p, const sp_digit* a_p,
         "cmp	lr, #48\n\t"
         "blt	L_sp_384_cond_sub_12_words_%=\n\t"
         "mov	%[r], r12\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b), [m] "+r" (m)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b), [m] "r" (m)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r12", "lr", "r4", "r5", "r6"
     );
     return (word32)(size_t)r;
@@ -89229,13 +91283,20 @@ static sp_digit sp_384_cond_sub_12(sp_digit* r_p, const sp_digit* a_p,
  * b  A single precision number to subtract.
  * m  Mask value to apply.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_384_cond_sub_12(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* b_p, sp_digit m_p)
+#else
+static sp_digit sp_384_cond_sub_12(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, sp_digit m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
     register sp_digit m asm ("r3") = (sp_digit)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	lr, #0\n\t"
@@ -89282,8 +91343,13 @@ static sp_digit sp_384_cond_sub_12(sp_digit* r_p, const sp_digit* a_p,
         "sbcs	r5, r5, r7\n\t"
         "stm	%[r]!, {r4, r5}\n\t"
         "sbc	%[r], lr, lr\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b), [m] "+r" (m)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b), [m] "r" (m)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r12", "lr", "r4", "r5", "r6", "r7"
     );
     return (word32)(size_t)r;
@@ -89299,11 +91365,19 @@ static sp_digit sp_384_cond_sub_12(sp_digit* r_p, const sp_digit* a_p,
  * m   The single precision number representing the modulus.
  * mp  The digit representing the negative inverse of m mod 2^n.
  */
-static SP_NOINLINE void sp_384_mont_reduce_12(sp_digit* a_p, const sp_digit* m_p, sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_384_mont_reduce_12(sp_digit* a_p,
+    const sp_digit* m_p, sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_384_mont_reduce_12(sp_digit* a, const sp_digit* m,
+    sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* m asm ("r1") = (const sp_digit*)m_p;
     register sp_digit mp asm ("r2") = (sp_digit)mp_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
 #if !(defined(WOLFSSL_ARM_ARCH) && (WOLFSSL_ARM_ARCH < 4))
@@ -89685,8 +91759,13 @@ static SP_NOINLINE void sp_384_mont_reduce_12(sp_digit* a_p, const sp_digit* m_p
         "str	r12, [%[a]]\n\t"
         "str	lr, [%[a], #4]\n\t"
         "mov	%[mp], r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [m] "+r" (m), [mp] "+r" (mp)
         :
+#else
+        :
+        : [a] "r" (a), [m] "r" (m), [mp] "r" (mp)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8", "r9",
             "r10", "r11"
     );
@@ -89700,11 +91779,19 @@ static SP_NOINLINE void sp_384_mont_reduce_12(sp_digit* a_p, const sp_digit* m_p
  * m   The single precision number representing the modulus.
  * mp  The digit representing the negative inverse of m mod 2^n.
  */
-static SP_NOINLINE void sp_384_mont_reduce_12(sp_digit* a_p, const sp_digit* m_p, sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_384_mont_reduce_12(sp_digit* a_p,
+    const sp_digit* m_p, sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_384_mont_reduce_12(sp_digit* a, const sp_digit* m,
+    sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* m asm ("r1") = (const sp_digit*)m_p;
     register sp_digit mp asm ("r2") = (sp_digit)mp_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldr	r11, [%[m]]\n\t"
@@ -89821,8 +91908,13 @@ static SP_NOINLINE void sp_384_mont_reduce_12(sp_digit* a_p, const sp_digit* m_p
         "str	r12, [%[a]]\n\t"
         "str	lr, [%[a], #4]\n\t"
         "mov	%[mp], r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [m] "+r" (m), [mp] "+r" (mp)
         :
+#else
+        :
+        : [a] "r" (a), [m] "r" (m), [mp] "r" (mp)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8", "r9",
             "r10", "r11"
     );
@@ -89836,11 +91928,19 @@ static SP_NOINLINE void sp_384_mont_reduce_12(sp_digit* a_p, const sp_digit* m_p
  * m   The single precision number representing the modulus.
  * mp  The digit representing the negative inverse of m mod 2^n.
  */
-static SP_NOINLINE void sp_384_mont_reduce_12(sp_digit* a_p, const sp_digit* m_p, sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_384_mont_reduce_12(sp_digit* a_p,
+    const sp_digit* m_p, sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_384_mont_reduce_12(sp_digit* a, const sp_digit* m,
+    sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* m asm ("r1") = (const sp_digit*)m_p;
     register sp_digit mp asm ("r2") = (sp_digit)mp_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         /* i = 0 */
@@ -89927,8 +92027,13 @@ static SP_NOINLINE void sp_384_mont_reduce_12(sp_digit* a_p, const sp_digit* m_p
         "str	r7, [%[a], #12]\n\t"
         "str	r8, [%[a], #16]\n\t"
         "mov	%[mp], lr\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [m] "+r" (m), [mp] "+r" (mp)
         :
+#else
+        :
+        : [a] "r" (a), [m] "r" (m), [mp] "r" (mp)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8", "r9",
             "r10", "r11"
     );
@@ -90085,10 +92190,16 @@ static void sp_384_mont_inv_12(sp_digit* r, const sp_digit* a, sp_digit* td)
  * return -ve, 0 or +ve if a is less than, equal to or greater than b
  * respectively.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_int32 sp_384_cmp_12(const sp_digit* a_p, const sp_digit* b_p)
+#else
+static sp_int32 sp_384_cmp_12(const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register const sp_digit* a asm ("r0") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r1") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r2, #-1\n\t"
@@ -90249,8 +92360,13 @@ static sp_int32 sp_384_cmp_12(const sp_digit* a_p, const sp_digit* b_p)
         "eor	r2, r2, r3\n\t"
 #endif /*WOLFSSL_SP_SMALL */
         "mov	%[a], r2\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r12", "lr", "r4", "r5", "r6"
     );
     return (word32)(size_t)a;
@@ -90309,13 +92425,20 @@ static void sp_384_map_12(sp_point_384* r, const sp_point_384* p,
  * b   Second number to add in Montgomery form.
  * m   Modulus (prime).
  */
-static void sp_384_mont_add_12(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p,
-    const sp_digit* m_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static void sp_384_mont_add_12(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p, const sp_digit* m_p)
+#else
+static void sp_384_mont_add_12(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, const sp_digit* m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
     register const sp_digit* m asm ("r3") = (const sp_digit*)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     sp_digit o;
 
@@ -90329,11 +92452,19 @@ static void sp_384_mont_add_12(sp_digit* r_p, const sp_digit* a_p, const sp_digi
  * a   Number to double in Montgomery form.
  * m   Modulus (prime).
  */
-static void sp_384_mont_dbl_12(sp_digit* r_p, const sp_digit* a_p, const sp_digit* m_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static void sp_384_mont_dbl_12(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* m_p)
+#else
+static void sp_384_mont_dbl_12(sp_digit* r, const sp_digit* a,
+    const sp_digit* m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* m asm ("r2") = (const sp_digit*)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     sp_digit o;
 
@@ -90347,11 +92478,19 @@ static void sp_384_mont_dbl_12(sp_digit* r_p, const sp_digit* a_p, const sp_digi
  * a   Number to triple in Montgomery form.
  * m   Modulus (prime).
  */
-static void sp_384_mont_tpl_12(sp_digit* r_p, const sp_digit* a_p, const sp_digit* m_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static void sp_384_mont_tpl_12(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* m_p)
+#else
+static void sp_384_mont_tpl_12(sp_digit* r, const sp_digit* a,
+    const sp_digit* m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* m asm ("r2") = (const sp_digit*)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     sp_digit o;
 
@@ -90368,11 +92507,18 @@ static void sp_384_mont_tpl_12(sp_digit* r_p, const sp_digit* a_p, const sp_digi
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_384_sub_12(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_384_sub_12(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_384_sub_12(sp_digit* r, const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r12, #0\n\t"
@@ -90391,8 +92537,13 @@ static sp_digit sp_384_sub_12(sp_digit* r_p, const sp_digit* a_p, const sp_digit
         "cmp	%[a], lr\n\t"
         "bne	L_sp_384_sub_12_word_%=\n\t"
         "mov	%[r], r12\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
             "r12", "lr"
     );
@@ -90406,11 +92557,18 @@ static sp_digit sp_384_sub_12(sp_digit* r_p, const sp_digit* a_p, const sp_digit
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_384_sub_12(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_384_sub_12(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_384_sub_12(sp_digit* r, const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a]!, {r3, r4, r5, r6}\n\t"
@@ -90435,8 +92593,13 @@ static sp_digit sp_384_sub_12(sp_digit* r_p, const sp_digit* a_p, const sp_digit
         "sbcs	r6, r6, r10\n\t"
         "stm	%[r]!, {r3, r4, r5, r6}\n\t"
         "sbc	%[r], r6, r6\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10"
     );
     return (word32)(size_t)r;
@@ -90452,13 +92615,20 @@ static sp_digit sp_384_sub_12(sp_digit* r_p, const sp_digit* a_p, const sp_digit
  * b  A single precision number to add.
  * m  Mask value to apply.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_384_cond_add_12(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* b_p, sp_digit m_p)
+#else
+static sp_digit sp_384_cond_add_12(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, sp_digit m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
     register sp_digit m asm ("r3") = (sp_digit)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	lr, #0\n\t"
@@ -90477,8 +92647,13 @@ static sp_digit sp_384_cond_add_12(sp_digit* r_p, const sp_digit* a_p,
         "cmp	r12, #48\n\t"
         "blt	L_sp_384_cond_add_12_words_%=\n\t"
         "mov	%[r], lr\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b), [m] "+r" (m)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b), [m] "r" (m)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r12", "lr", "r4", "r5", "r6"
     );
     return (word32)(size_t)r;
@@ -90493,13 +92668,20 @@ static sp_digit sp_384_cond_add_12(sp_digit* r_p, const sp_digit* a_p,
  * b  A single precision number to add.
  * m  Mask value to apply.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_384_cond_add_12(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* b_p, sp_digit m_p)
+#else
+static sp_digit sp_384_cond_add_12(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, sp_digit m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
     register sp_digit m asm ("r3") = (sp_digit)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r8, #0\n\t"
@@ -90546,8 +92728,13 @@ static sp_digit sp_384_cond_add_12(sp_digit* r_p, const sp_digit* a_p,
         "adcs	r5, r5, r7\n\t"
         "stm	%[r]!, {r4, r5}\n\t"
         "adc	%[r], r8, r8\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b), [m] "+r" (m)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b), [m] "r" (m)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r12", "lr", "r4", "r5", "r6", "r7", "r8"
     );
     return (word32)(size_t)r;
@@ -90561,13 +92748,20 @@ static sp_digit sp_384_cond_add_12(sp_digit* r_p, const sp_digit* a_p,
  * b   Number to subtract with in Montgomery form.
  * m   Modulus (prime).
  */
-static void sp_384_mont_sub_12(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p,
-    const sp_digit* m_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static void sp_384_mont_sub_12(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p, const sp_digit* m_p)
+#else
+static void sp_384_mont_sub_12(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, const sp_digit* m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
     register const sp_digit* m asm ("r3") = (const sp_digit*)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     sp_digit o;
 
@@ -90578,10 +92772,16 @@ static void sp_384_mont_sub_12(sp_digit* r_p, const sp_digit* a_p, const sp_digi
 #ifdef WOLFSSL_SP_SMALL
 #else
 #endif /* WOLFSSL_SP_SMALL */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_384_rshift1_12(sp_digit* r_p, const sp_digit* a_p)
+#else
+static void sp_384_rshift1_12(sp_digit* r, const sp_digit* a)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a], {r2, r3}\n\t"
@@ -90630,8 +92830,13 @@ static void sp_384_rshift1_12(sp_digit* r_p, const sp_digit* a_p)
         "lsr	r4, r4, #1\n\t"
         "str	r3, [%[r], #40]\n\t"
         "str	r4, [%[r], #44]\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r4"
     );
 }
@@ -94211,9 +96416,15 @@ int sp_ecc_mulmod_base_add_384(const mp_int* km, const ecc_point* am,
  *
  * a  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_384_add_one_12(sp_digit* a_p)
+#else
+static void sp_384_add_one_12(sp_digit* a)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a], {r1, r2, r3, r4}\n\t"
@@ -94234,8 +96445,13 @@ static void sp_384_add_one_12(sp_digit* a_p)
         "adcs	r3, r3, #0\n\t"
         "adcs	r4, r4, #0\n\t"
         "stm	%[a]!, {r1, r2, r3, r4}\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a)
         :
+#else
+        :
+        : [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r1", "r2", "r3", "r4"
     );
 }
@@ -94274,9 +96490,9 @@ static void sp_384_from_bin(sp_digit* r, int size, const byte* a, int n)
         }
 #else
         switch (i) {
-            case 2: d[2] = a[2]; //fallthrough
-            case 1: d[1] = a[1]; //fallthrough
-            case 0: d[0] = a[0]; //fallthrough
+            case 2: d[i-2] = a[2]; //fallthrough
+            case 1: d[i-1] = a[1]; //fallthrough
+            case 0: d[i-0] = a[0]; //fallthrough
         }
 #endif
         j++;
@@ -94625,10 +96841,16 @@ int sp_ecc_secret_gen_384_nb(sp_ecc_ctx_t* sp_ctx, const mp_int* priv,
  * a  A single precision integer.
  * b  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_384_sub_in_place_12(sp_digit* a_p, const sp_digit* b_p)
+#else
+static sp_digit sp_384_sub_in_place_12(sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* b asm ("r1") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r12, #0\n\t"
@@ -94647,8 +96869,13 @@ static sp_digit sp_384_sub_in_place_12(sp_digit* a_p, const sp_digit* b_p)
         "cmp	%[a], lr\n\t"
         "bne	L_sp_384_sub_in_pkace_12_word_%=\n\t"
         "mov	%[a], r12\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r12",
             "lr"
     );
@@ -94661,10 +96888,16 @@ static sp_digit sp_384_sub_in_place_12(sp_digit* a_p, const sp_digit* b_p)
  * a  A single precision integer and result.
  * b  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_384_sub_in_place_12(sp_digit* a_p, const sp_digit* b_p)
+#else
+static sp_digit sp_384_sub_in_place_12(sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* b asm ("r1") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a], {r2, r3, r4, r5}\n\t"
@@ -94689,8 +96922,13 @@ static sp_digit sp_384_sub_in_place_12(sp_digit* a_p, const sp_digit* b_p)
         "sbcs	r5, r5, r9\n\t"
         "stm	%[a]!, {r2, r3, r4, r5}\n\t"
         "sbc	%[a], r9, r9\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9"
     );
     return (word32)(size_t)a;
@@ -94704,11 +96942,17 @@ static sp_digit sp_384_sub_in_place_12(sp_digit* a_p, const sp_digit* b_p)
  * a  A single precision integer.
  * b  A single precision digit.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_384_mul_d_12(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
+#else
+static void sp_384_mul_d_12(sp_digit* r, const sp_digit* a, sp_digit b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register sp_digit b asm ("r2") = (sp_digit)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         /* A[0] * B */
@@ -94789,8 +97033,13 @@ static void sp_384_mul_d_12(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
         "cmp	r9, #48\n\t"
         "blt	L_sp_384_mul_d_12_word_%=\n\t"
         "str	r3, [%[r], #48]\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9"
     );
 }
@@ -94802,11 +97051,17 @@ static void sp_384_mul_d_12(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
  * a  A single precision integer.
  * b  A single precision digit.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_384_mul_d_12(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
+#else
+static void sp_384_mul_d_12(sp_digit* r, const sp_digit* a, sp_digit b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register sp_digit b asm ("r2") = (sp_digit)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         /* A[0] * B */
@@ -95190,8 +97445,13 @@ static void sp_384_mul_d_12(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
 #endif
         "stm	%[r]!, {r5}\n\t"
         "str	r3, [%[r]]\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8"
     );
 }
@@ -95207,11 +97467,17 @@ static void sp_384_mul_d_12(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
  *
  * Note that this is an approximate div. It may give an answer 1 larger.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit div_384_word_12(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
+#else
+static sp_digit div_384_word_12(sp_digit d1, sp_digit d0, sp_digit div)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit d1 asm ("r0") = (sp_digit)d1_p;
     register sp_digit d0 asm ("r1") = (sp_digit)d0_p;
     register sp_digit div asm ("r2") = (sp_digit)div_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "lsr	r6, %[div], #16\n\t"
@@ -95249,8 +97515,13 @@ static sp_digit div_384_word_12(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
         "sub	%[d0], %[d0], r3\n\t"
         "udiv	r3, %[d0], %[div]\n\t"
         "add	%[d1], r4, r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [d1] "+r" (d1), [d0] "+r" (d0), [div] "+r" (div)
         :
+#else
+        :
+        : [d1] "r" (d1), [d0] "r" (d0), [div] "r" (div)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8"
     );
     return (word32)(size_t)d1;
@@ -95266,11 +97537,17 @@ static sp_digit div_384_word_12(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
  *
  * Note that this is an approximate div. It may give an answer 1 larger.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit div_384_word_12(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
+#else
+static sp_digit div_384_word_12(sp_digit d1, sp_digit d0, sp_digit div)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit d1 asm ("r0") = (sp_digit)d1_p;
     register sp_digit d0 asm ("r1") = (sp_digit)d0_p;
     register sp_digit div asm ("r2") = (sp_digit)div_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "lsr	lr, %[div], #1\n\t"
@@ -95387,8 +97664,13 @@ static sp_digit div_384_word_12(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
         "subs	r6, %[div], r7\n\t"
         "sbc	r6, r6, r6\n\t"
         "sub	%[d1], r3, r6\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [d1] "+r" (d1), [d0] "+r" (d0), [div] "+r" (div)
         :
+#else
+        :
+        : [d1] "r" (d1), [d0] "r" (d0), [div] "r" (div)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8"
     );
     return (word32)(size_t)d1;
@@ -96018,11 +98300,19 @@ int sp_ecc_sign_384_nb(sp_ecc_ctx_t* sp_ctx, const byte* hash, word32 hashLen, W
  * a  Number to divide.
  * m  Modulus.
  */
-static void sp_384_div2_mod_12(sp_digit* r_p, const sp_digit* a_p, const sp_digit* m_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static void sp_384_div2_mod_12(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* m_p)
+#else
+static void sp_384_div2_mod_12(sp_digit* r, const sp_digit* a,
+    const sp_digit* m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* m asm ("r2") = (const sp_digit*)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a]!, {r4}\n\t"
@@ -96114,8 +98404,13 @@ static void sp_384_div2_mod_12(sp_digit* r_p, const sp_digit* a_p, const sp_digi
         "orr	r10, r10, r3, lsl #31\n\t"
         "str	r9, [%[r], #40]\n\t"
         "str	r10, [%[r], #44]\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [m] "+r" (m)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [m] "r" (m)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11",
             "r3", "r12"
     );
@@ -96157,11 +98452,21 @@ static const byte L_sp_384_num_bits_12_table[] = {
     0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
 };
 
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static int sp_384_num_bits_12(const sp_digit* a_p)
+#else
+static int sp_384_num_bits_12(const sp_digit* a)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register const sp_digit* a asm ("r0") = (const sp_digit*)a_p;
     register byte* L_sp_384_num_bits_12_table_c asm ("r1") =
         (byte*)&L_sp_384_num_bits_12_table;
+#else
+    register byte* L_sp_384_num_bits_12_table_c =
+        (byte*)&L_sp_384_num_bits_12_table;
+
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	lr, %[L_sp_384_num_bits_12_table]\n\t"
@@ -96704,18 +99009,30 @@ static int sp_384_num_bits_12(const sp_digit* a_p)
         "\n"
     "L_sp_384_num_bits_12_13_%=: \n\t"
         "mov	%[a], r12\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a),
           [L_sp_384_num_bits_12_table] "+r" (L_sp_384_num_bits_12_table_c)
         :
+#else
+        :
+        : [a] "r" (a),
+          [L_sp_384_num_bits_12_table] "r" (L_sp_384_num_bits_12_table_c)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r12", "lr"
     );
     return (word32)(size_t)a;
 }
 
 #else
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static int sp_384_num_bits_12(const sp_digit* a_p)
+#else
+static int sp_384_num_bits_12(const sp_digit* a)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register const sp_digit* a asm ("r0") = (const sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldr	r1, [%[a], #44]\n\t"
@@ -96844,8 +99161,13 @@ static int sp_384_num_bits_12(const sp_digit* a_p)
         "\n"
     "L_sp_384_num_bits_12_13_%=: \n\t"
         "mov	%[a], r12\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a)
         :
+#else
+        :
+        : [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r1", "r2", "r3", "r12", "lr"
     );
     return (word32)(size_t)a;
@@ -97976,11 +100298,18 @@ static const sp_digit p521_b[17] = {
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static void sp_521_mul_17(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static void sp_521_mul_17(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static void sp_521_mul_17(sp_digit* r, const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #0x88\n\t"
@@ -98166,8 +100495,13 @@ static void sp_521_mul_17(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_
         "stm	%[r]!, {r3, r4, r6, r7, r8, r9, r10, r11}\n\t"
         "subs	r5, r5, #32\n\t"
         "bgt	L_sp_521_mul_17_store_%=\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "lr",
             "r11"
     );
@@ -98180,11 +100514,18 @@ static void sp_521_mul_17(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static void sp_521_mul_17(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static void sp_521_mul_17(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static void sp_521_mul_17(sp_digit* r, const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #0x44\n\t"
@@ -109183,8 +111524,13 @@ static void sp_521_mul_17(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_
         "stm	%[r]!, {r3, r4, r5, r6}\n\t"
         "ldm	sp!, {r3}\n\t"
         "stm	%[r]!, {r3}\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r11",
             "r12"
     );
@@ -109197,10 +111543,16 @@ static void sp_521_mul_17(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_
  * r  A single precision integer.
  * a  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_521_sqr_17(sp_digit* r_p, const sp_digit* a_p)
+#else
+static void sp_521_sqr_17(sp_digit* r, const sp_digit* a)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #0x88\n\t"
@@ -109346,8 +111698,13 @@ static void sp_521_sqr_17(sp_digit* r_p, const sp_digit* a_p)
         "stm	%[r]!, {r3, r4, r6, r7, r8, r9, r10, r11}\n\t"
         "subs	r5, r5, #32\n\t"
         "bgt	L_sp_521_sqr_17_store_%=\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "lr",
             "r11"
     );
@@ -109359,10 +111716,16 @@ static void sp_521_sqr_17(sp_digit* r_p, const sp_digit* a_p)
  * r  A single precision integer.
  * a  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_521_sqr_17(sp_digit* r_p, const sp_digit* a_p)
+#else
+static void sp_521_sqr_17(sp_digit* r, const sp_digit* a)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #0x44\n\t"
@@ -115219,8 +117582,13 @@ static void sp_521_sqr_17(sp_digit* r_p, const sp_digit* a_p)
         "stm	%[r]!, {r2, r3, r4, r8}\n\t"
         "ldm	sp!, {r2}\n\t"
         "stm	%[r]!, {r2}\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
             "r12"
     );
@@ -115234,11 +117602,18 @@ static void sp_521_sqr_17(sp_digit* r_p, const sp_digit* a_p)
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_521_add_17(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_521_add_17(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_521_add_17(sp_digit* r, const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r3, #0\n\t"
@@ -115264,8 +117639,13 @@ static sp_digit sp_521_add_17(sp_digit* r_p, const sp_digit* a_p, const sp_digit
         "stm	%[r]!, {r4}\n\t"
         "mov	r4, #0\n\t"
         "adc	%[r], r4, #0\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11",
             "r3", "r12"
     );
@@ -115279,11 +117659,18 @@ static sp_digit sp_521_add_17(sp_digit* r_p, const sp_digit* a_p, const sp_digit
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_521_add_17(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_521_add_17(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_521_add_17(sp_digit* r, const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a]!, {r3, r4, r5, r6}\n\t"
@@ -115320,8 +117707,13 @@ static sp_digit sp_521_add_17(sp_digit* r_p, const sp_digit* a_p, const sp_digit
         "stm	%[r]!, {r3}\n\t"
         "mov	%[r], #0\n\t"
         "adc	%[r], %[r], #0\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10"
     );
     return (word32)(size_t)r;
@@ -115550,13 +117942,20 @@ static int sp_521_point_to_ecc_point_17(const sp_point_521* p, ecc_point* pm)
  * b  A single precision number to subtract.
  * m  Mask value to apply.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_521_cond_sub_17(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* b_p, sp_digit m_p)
+#else
+static sp_digit sp_521_cond_sub_17(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, sp_digit m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
     register sp_digit m asm ("r3") = (sp_digit)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r6, #0\n\t"
@@ -115575,8 +117974,13 @@ static sp_digit sp_521_cond_sub_17(sp_digit* r_p, const sp_digit* a_p,
         "cmp	lr, #0x44\n\t"
         "blt	L_sp_521_cond_sub_17_words_%=\n\t"
         "mov	%[r], r12\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b), [m] "+r" (m)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b), [m] "r" (m)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r12", "lr", "r4", "r5", "r6"
     );
     return (word32)(size_t)r;
@@ -115591,13 +117995,20 @@ static sp_digit sp_521_cond_sub_17(sp_digit* r_p, const sp_digit* a_p,
  * b  A single precision number to subtract.
  * m  Mask value to apply.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_521_cond_sub_17(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* b_p, sp_digit m_p)
+#else
+static sp_digit sp_521_cond_sub_17(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, sp_digit m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
     register sp_digit m asm ("r3") = (sp_digit)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	lr, #0\n\t"
@@ -115663,8 +118074,13 @@ static sp_digit sp_521_cond_sub_17(sp_digit* r_p, const sp_digit* a_p,
         "sbcs	r4, r4, r6\n\t"
         "str	r4, [%[r]]\n\t"
         "sbc	%[r], lr, lr\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b), [m] "+r" (m)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b), [m] "r" (m)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r12", "lr", "r4", "r5", "r6", "r7"
     );
     return (word32)(size_t)r;
@@ -115677,9 +118093,17 @@ static sp_digit sp_521_cond_sub_17(sp_digit* r_p, const sp_digit* a_p,
  * m   The single precision number representing the modulus.
  * mp  The digit representing the negative inverse of m mod 2^n.
  */
-static SP_NOINLINE void sp_521_mont_reduce_17(sp_digit* a_p, const sp_digit* m_p, sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_521_mont_reduce_17(sp_digit* a_p,
+    const sp_digit* m_p, sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_521_mont_reduce_17(sp_digit* a, const sp_digit* m,
+    sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #0x44\n\t"
@@ -115790,13 +118214,26 @@ static SP_NOINLINE void sp_521_mont_reduce_17(sp_digit* a_p, const sp_digit* m_p
         "adcs	r7, r7, #0\n\t"
         "adcs	r8, r8, #0\n\t"
         "stm	%[a]!, {r1, r2, r3, r4, r5, r6, r7, r8}\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a)
         :
+#else
+        :
+        : [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9",
             "r10", "r11", "r12", "lr"
     );
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     (void)m_p;
+#else
+    (void)m;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     (void)mp_p;
+#else
+    (void)mp;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 }
 
 #if defined(WOLFSSL_ARM_ARCH) && (WOLFSSL_ARM_ARCH < 4)
@@ -115806,12 +118243,19 @@ static SP_NOINLINE void sp_521_mont_reduce_17(sp_digit* a_p, const sp_digit* m_p
  * m   The single precision number representing the modulus.
  * mp  The digit representing the negative inverse of m mod 2^n.
  */
-static SP_NOINLINE void sp_521_mont_reduce_order_17(sp_digit* a_p, const sp_digit* m_p,
-    sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_521_mont_reduce_order_17(sp_digit* a_p,
+    const sp_digit* m_p, sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_521_mont_reduce_order_17(sp_digit* a,
+    const sp_digit* m, sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* m asm ("r1") = (const sp_digit*)m_p;
     register sp_digit mp asm ("r2") = (sp_digit)mp_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
 #if !(defined(WOLFSSL_ARM_ARCH) && (WOLFSSL_ARM_ARCH < 4))
@@ -116420,8 +118864,13 @@ static SP_NOINLINE void sp_521_mont_reduce_order_17(sp_digit* a_p, const sp_digi
         "lsr	r3, r4, #9\n\t"
         "add	%[a], %[a], #4\n\t"
         "mov	%[mp], r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [m] "+r" (m), [mp] "+r" (mp)
         :
+#else
+        :
+        : [a] "r" (a), [m] "r" (m), [mp] "r" (mp)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8", "r9",
             "r10", "r11"
     );
@@ -116435,12 +118884,19 @@ static SP_NOINLINE void sp_521_mont_reduce_order_17(sp_digit* a_p, const sp_digi
  * m   The single precision number representing the modulus.
  * mp  The digit representing the negative inverse of m mod 2^n.
  */
-static SP_NOINLINE void sp_521_mont_reduce_order_17(sp_digit* a_p, const sp_digit* m_p,
-    sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_521_mont_reduce_order_17(sp_digit* a_p,
+    const sp_digit* m_p, sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_521_mont_reduce_order_17(sp_digit* a,
+    const sp_digit* m, sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* m asm ("r1") = (const sp_digit*)m_p;
     register sp_digit mp asm ("r2") = (sp_digit)mp_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldr	r11, [%[m]]\n\t"
@@ -116679,8 +119135,13 @@ static SP_NOINLINE void sp_521_mont_reduce_order_17(sp_digit* a_p, const sp_digi
         "lsr	r3, r4, #9\n\t"
         "add	%[a], %[a], #4\n\t"
         "mov	%[mp], r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [m] "+r" (m), [mp] "+r" (mp)
         :
+#else
+        :
+        : [a] "r" (a), [m] "r" (m), [mp] "r" (mp)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8", "r9",
             "r10", "r11"
     );
@@ -116694,12 +119155,19 @@ static SP_NOINLINE void sp_521_mont_reduce_order_17(sp_digit* a_p, const sp_digi
  * m   The single precision number representing the modulus.
  * mp  The digit representing the negative inverse of m mod 2^n.
  */
-static SP_NOINLINE void sp_521_mont_reduce_order_17(sp_digit* a_p, const sp_digit* m_p,
-    sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_521_mont_reduce_order_17(sp_digit* a_p,
+    const sp_digit* m_p, sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_521_mont_reduce_order_17(sp_digit* a,
+    const sp_digit* m, sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* m asm ("r1") = (const sp_digit*)m_p;
     register sp_digit mp asm ("r2") = (sp_digit)mp_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         /* i = 0 */
@@ -116893,8 +119361,13 @@ static SP_NOINLINE void sp_521_mont_reduce_order_17(sp_digit* a_p, const sp_digi
         "lsr	lr, r10, #9\n\t"
         "add	%[a], %[a], #4\n\t"
         "mov	%[mp], lr\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [m] "+r" (m), [mp] "+r" (mp)
         :
+#else
+        :
+        : [a] "r" (a), [m] "r" (m), [mp] "r" (mp)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8", "r9",
             "r10", "r11"
     );
@@ -117048,10 +119521,16 @@ static void sp_521_mont_inv_17(sp_digit* r, const sp_digit* a, sp_digit* td)
  * return -ve, 0 or +ve if a is less than, equal to or greater than b
  * respectively.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_int32 sp_521_cmp_17(const sp_digit* a_p, const sp_digit* b_p)
+#else
+static sp_int32 sp_521_cmp_17(const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register const sp_digit* a asm ("r0") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r1") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r2, #-1\n\t"
@@ -117267,8 +119746,13 @@ static sp_int32 sp_521_cmp_17(const sp_digit* a_p, const sp_digit* b_p)
         "eor	r2, r2, r3\n\t"
 #endif /*WOLFSSL_SP_SMALL */
         "mov	%[a], r2\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r12", "lr", "r4", "r5", "r6"
     );
     return (word32)(size_t)a;
@@ -117327,12 +119811,19 @@ static void sp_521_map_17(sp_point_521* r, const sp_point_521* p,
  * b   Second number to add in Montgomery form.
  * m   Modulus (prime).
  */
-static void sp_521_mont_add_17(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p,
-    const sp_digit* m_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static void sp_521_mont_add_17(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p, const sp_digit* m_p)
+#else
+static void sp_521_mont_add_17(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, const sp_digit* m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r3, #0\n\t"
@@ -117400,12 +119891,21 @@ static void sp_521_mont_add_17(sp_digit* r_p, const sp_digit* a_p, const sp_digi
         "ldm	%[r], {r4}\n\t"
         "adcs	r4, r4, #0\n\t"
         "stm	%[r]!, {r4}\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11",
             "r3", "r12"
     );
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     (void)m_p;
+#else
+    (void)m;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 }
 
 /* Double a Montgomery form number (r = a + a % m).
@@ -117414,10 +119914,18 @@ static void sp_521_mont_add_17(sp_digit* r_p, const sp_digit* a_p, const sp_digi
  * a   Number to double in Montgomery form.
  * m   Modulus (prime).
  */
-static void sp_521_mont_dbl_17(sp_digit* r_p, const sp_digit* a_p, const sp_digit* m_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static void sp_521_mont_dbl_17(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* m_p)
+#else
+static void sp_521_mont_dbl_17(sp_digit* r, const sp_digit* a,
+    const sp_digit* m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r2, #0\n\t"
@@ -117476,12 +119984,21 @@ static void sp_521_mont_dbl_17(sp_digit* r_p, const sp_digit* a_p, const sp_digi
         "ldm	%[r], {r4}\n\t"
         "adcs	r4, r4, #0\n\t"
         "stm	%[r]!, {r4}\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11",
             "r2", "r3"
     );
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     (void)m_p;
+#else
+    (void)m;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 }
 
 /* Triple a Montgomery form number (r = a + a + a % m).
@@ -117490,10 +120007,18 @@ static void sp_521_mont_dbl_17(sp_digit* r_p, const sp_digit* a_p, const sp_digi
  * a   Number to triple in Montgomery form.
  * m   Modulus (prime).
  */
-static void sp_521_mont_tpl_17(sp_digit* r_p, const sp_digit* a_p, const sp_digit* m_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static void sp_521_mont_tpl_17(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* m_p)
+#else
+static void sp_521_mont_tpl_17(sp_digit* r, const sp_digit* a,
+    const sp_digit* m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r2, #0\n\t"
@@ -117572,12 +120097,21 @@ static void sp_521_mont_tpl_17(sp_digit* r_p, const sp_digit* a_p, const sp_digi
         "ldm	%[r], {r4}\n\t"
         "adcs	r4, r4, #0\n\t"
         "stm	%[r]!, {r4}\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11",
             "r2", "r3"
     );
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     (void)m_p;
+#else
+    (void)m;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 }
 
 /* Subtract two Montgomery form numbers (r = a - b % m).
@@ -117587,12 +120121,19 @@ static void sp_521_mont_tpl_17(sp_digit* r_p, const sp_digit* a_p, const sp_digi
  * b   Number to subtract with in Montgomery form.
  * m   Modulus (prime).
  */
-static void sp_521_mont_sub_17(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p,
-    const sp_digit* m_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static void sp_521_mont_sub_17(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p, const sp_digit* m_p)
+#else
+static void sp_521_mont_sub_17(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, const sp_digit* m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r3, #0\n\t"
@@ -117661,18 +120202,33 @@ static void sp_521_mont_sub_17(sp_digit* r_p, const sp_digit* a_p, const sp_digi
         "ldm	%[r], {r4}\n\t"
         "sbcs	r4, r4, #0\n\t"
         "stm	%[r]!, {r4}\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11",
             "r3", "r12"
     );
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     (void)m_p;
+#else
+    (void)m;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 }
 
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_521_rshift1_17(sp_digit* r_p, const sp_digit* a_p)
+#else
+static void sp_521_rshift1_17(sp_digit* r, const sp_digit* a)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a], {r2, r3}\n\t"
@@ -117741,8 +120297,13 @@ static void sp_521_rshift1_17(sp_digit* r_p, const sp_digit* a_p)
         "lsr	r3, r3, #1\n\t"
         "str	r2, [%[r], #60]\n\t"
         "str	r3, [%[r], #64]\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r4"
     );
 }
@@ -121944,9 +124505,15 @@ int sp_ecc_mulmod_base_add_521(const mp_int* km, const ecc_point* am,
  *
  * a  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_521_add_one_17(sp_digit* a_p)
+#else
+static void sp_521_add_one_17(sp_digit* a)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a], {r1, r2, r3, r4}\n\t"
@@ -121976,8 +124543,13 @@ static void sp_521_add_one_17(sp_digit* a_p)
         "ldm	%[a], {r1}\n\t"
         "adcs	r1, r1, #0\n\t"
         "stm	%[a]!, {r1}\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a)
         :
+#else
+        :
+        : [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r1", "r2", "r3", "r4"
     );
 }
@@ -122016,9 +124588,9 @@ static void sp_521_from_bin(sp_digit* r, int size, const byte* a, int n)
         }
 #else
         switch (i) {
-            case 2: d[2] = a[2]; //fallthrough
-            case 1: d[1] = a[1]; //fallthrough
-            case 0: d[0] = a[0]; //fallthrough
+            case 2: d[i-2] = a[2]; //fallthrough
+            case 1: d[i-1] = a[1]; //fallthrough
+            case 0: d[i-0] = a[0]; //fallthrough
         }
 #endif
         j++;
@@ -122360,11 +124932,17 @@ int sp_ecc_secret_gen_521_nb(sp_ecc_ctx_t* sp_ctx, const mp_int* priv,
 #endif /* HAVE_ECC_DHE */
 
 #if defined(HAVE_ECC_SIGN) || defined(HAVE_ECC_VERIFY)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_521_rshift_17(sp_digit* r_p, const sp_digit* a_p, byte n_p)
+#else
+static void sp_521_rshift_17(sp_digit* r, const sp_digit* a, byte n)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register byte n asm ("r2") = (byte)n_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "rsb	r12, %[n], #32\n\t"
@@ -122458,8 +125036,13 @@ static void sp_521_rshift_17(sp_digit* r_p, const sp_digit* a_p, byte n_p)
 #else
         "strd	r4, r5, [%[r], #60]\n\t"
 #endif
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [n] "+r" (n)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [n] "r" (n)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r4", "r5", "r6", "r3", "r12"
     );
 }
@@ -122468,11 +125051,17 @@ static void sp_521_rshift_17(sp_digit* r_p, const sp_digit* a_p, byte n_p)
 #if defined(HAVE_ECC_SIGN) || defined(HAVE_ECC_VERIFY)
 #endif
 #if defined(HAVE_ECC_SIGN) || defined(HAVE_ECC_VERIFY)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_521_lshift_17(sp_digit* r_p, const sp_digit* a_p, byte n_p)
+#else
+static void sp_521_lshift_17(sp_digit* r, const sp_digit* a, byte n)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register byte n asm ("r2") = (byte)n_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "rsb	r12, %[n], #31\n\t"
@@ -122578,17 +125167,28 @@ static void sp_521_lshift_17(sp_digit* r_p, const sp_digit* a_p, byte n_p)
         "orr	r5, r5, r3\n\t"
         "str	r4, [%[r]]\n\t"
         "str	r5, [%[r], #4]\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [n] "+r" (n)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [n] "r" (n)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r4", "r5", "r6", "r3", "r12"
     );
 }
 
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_521_lshift_34(sp_digit* r_p, const sp_digit* a_p, byte n_p)
+#else
+static void sp_521_lshift_34(sp_digit* r, const sp_digit* a, byte n)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register byte n asm ("r2") = (byte)n_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "rsb	r12, %[n], #31\n\t"
@@ -122796,8 +125396,13 @@ static void sp_521_lshift_34(sp_digit* r_p, const sp_digit* a_p, byte n_p)
         "orr	r6, r6, r3\n\t"
         "str	r5, [%[r]]\n\t"
         "str	r6, [%[r], #4]\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [n] "+r" (n)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [n] "r" (n)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r4", "r5", "r6", "r3", "r12"
     );
 }
@@ -122808,10 +125413,16 @@ static void sp_521_lshift_34(sp_digit* r_p, const sp_digit* a_p, byte n_p)
  * a  A single precision integer.
  * b  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_521_sub_in_place_17(sp_digit* a_p, const sp_digit* b_p)
+#else
+static sp_digit sp_521_sub_in_place_17(sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* b asm ("r1") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r12, #0\n\t"
@@ -122835,8 +125446,13 @@ static sp_digit sp_521_sub_in_place_17(sp_digit* a_p, const sp_digit* b_p)
         "sbcs	r2, r2, r6\n\t"
         "stm	%[a]!, {r2}\n\t"
         "sbc	%[a], %[a], %[a]\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r12",
             "lr"
     );
@@ -122849,10 +125465,16 @@ static sp_digit sp_521_sub_in_place_17(sp_digit* a_p, const sp_digit* b_p)
  * a  A single precision integer and result.
  * b  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_521_sub_in_place_17(sp_digit* a_p, const sp_digit* b_p)
+#else
+static sp_digit sp_521_sub_in_place_17(sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* b asm ("r1") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a], {r2, r3, r4, r5}\n\t"
@@ -122888,8 +125510,13 @@ static sp_digit sp_521_sub_in_place_17(sp_digit* a_p, const sp_digit* b_p)
         "sbcs	r2, r2, r6\n\t"
         "stm	%[a]!, {r2}\n\t"
         "sbc	%[a], r9, r9\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9"
     );
     return (word32)(size_t)a;
@@ -122903,11 +125530,17 @@ static sp_digit sp_521_sub_in_place_17(sp_digit* a_p, const sp_digit* b_p)
  * a  A single precision integer.
  * b  A single precision digit.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_521_mul_d_17(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
+#else
+static void sp_521_mul_d_17(sp_digit* r, const sp_digit* a, sp_digit b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register sp_digit b asm ("r2") = (sp_digit)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         /* A[0] * B */
@@ -122988,8 +125621,13 @@ static void sp_521_mul_d_17(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
         "cmp	r9, #0x44\n\t"
         "blt	L_sp_521_mul_d_17_word_%=\n\t"
         "str	r3, [%[r], #68]\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9"
     );
 }
@@ -123001,11 +125639,17 @@ static void sp_521_mul_d_17(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
  * a  A single precision integer.
  * b  A single precision digit.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_521_mul_d_17(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
+#else
+static void sp_521_mul_d_17(sp_digit* r, const sp_digit* a, sp_digit b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register sp_digit b asm ("r2") = (sp_digit)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         /* A[0] * B */
@@ -123549,8 +126193,13 @@ static void sp_521_mul_d_17(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
 #endif
         "stm	%[r]!, {r4}\n\t"
         "str	r5, [%[r]]\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8"
     );
 }
@@ -123566,11 +126215,17 @@ static void sp_521_mul_d_17(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
  *
  * Note that this is an approximate div. It may give an answer 1 larger.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit div_521_word_17(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
+#else
+static sp_digit div_521_word_17(sp_digit d1, sp_digit d0, sp_digit div)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit d1 asm ("r0") = (sp_digit)d1_p;
     register sp_digit d0 asm ("r1") = (sp_digit)d0_p;
     register sp_digit div asm ("r2") = (sp_digit)div_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "lsr	r6, %[div], #16\n\t"
@@ -123608,8 +126263,13 @@ static sp_digit div_521_word_17(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
         "sub	%[d0], %[d0], r3\n\t"
         "udiv	r3, %[d0], %[div]\n\t"
         "add	%[d1], r4, r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [d1] "+r" (d1), [d0] "+r" (d0), [div] "+r" (div)
         :
+#else
+        :
+        : [d1] "r" (d1), [d0] "r" (d0), [div] "r" (div)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8"
     );
     return (word32)(size_t)d1;
@@ -123625,11 +126285,17 @@ static sp_digit div_521_word_17(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
  *
  * Note that this is an approximate div. It may give an answer 1 larger.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit div_521_word_17(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
+#else
+static sp_digit div_521_word_17(sp_digit d1, sp_digit d0, sp_digit div)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit d1 asm ("r0") = (sp_digit)d1_p;
     register sp_digit d0 asm ("r1") = (sp_digit)d0_p;
     register sp_digit div asm ("r2") = (sp_digit)div_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "lsr	lr, %[div], #1\n\t"
@@ -123746,8 +126412,13 @@ static sp_digit div_521_word_17(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
         "subs	r6, %[div], r7\n\t"
         "sbc	r6, r6, r6\n\t"
         "sub	%[d1], r3, r6\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [d1] "+r" (d1), [d0] "+r" (d0), [div] "+r" (div)
         :
+#else
+        :
+        : [d1] "r" (d1), [d0] "r" (d0), [div] "r" (div)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8"
     );
     return (word32)(size_t)d1;
@@ -124408,11 +127079,18 @@ int sp_ecc_sign_521_nb(sp_ecc_ctx_t* sp_ctx, const byte* hash, word32 hashLen, W
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_521_sub_17(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_521_sub_17(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_521_sub_17(sp_digit* r, const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r12, #0\n\t"
@@ -124436,8 +127114,13 @@ static sp_digit sp_521_sub_17(sp_digit* r_p, const sp_digit* a_p, const sp_digit
         "sbcs	r3, r3, r7\n\t"
         "stm	%[r]!, {r3}\n\t"
         "sbc	%[r], r6, r6\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
             "r12", "lr"
     );
@@ -124451,11 +127134,18 @@ static sp_digit sp_521_sub_17(sp_digit* r_p, const sp_digit* a_p, const sp_digit
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_521_sub_17(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_521_sub_17(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_521_sub_17(sp_digit* r, const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a]!, {r3, r4, r5, r6}\n\t"
@@ -124491,8 +127181,13 @@ static sp_digit sp_521_sub_17(sp_digit* r_p, const sp_digit* a_p, const sp_digit
         "sbcs	r3, r3, r7\n\t"
         "stm	%[r]!, {r3}\n\t"
         "sbc	%[r], r6, r6\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10"
     );
     return (word32)(size_t)r;
@@ -124505,11 +127200,19 @@ static sp_digit sp_521_sub_17(sp_digit* r_p, const sp_digit* a_p, const sp_digit
  * a  Number to divide.
  * m  Modulus.
  */
-static void sp_521_div2_mod_17(sp_digit* r_p, const sp_digit* a_p, const sp_digit* m_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static void sp_521_div2_mod_17(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* m_p)
+#else
+static void sp_521_div2_mod_17(sp_digit* r, const sp_digit* a,
+    const sp_digit* m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* m asm ("r2") = (const sp_digit*)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a]!, {r4}\n\t"
@@ -124636,8 +127339,13 @@ static void sp_521_div2_mod_17(sp_digit* r_p, const sp_digit* a_p, const sp_digi
         "orr	r9, r9, r3, lsl #31\n\t"
         "str	r8, [%[r], #60]\n\t"
         "str	r9, [%[r], #64]\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [m] "+r" (m)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [m] "r" (m)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11",
             "r3", "r12"
     );
@@ -124679,11 +127387,21 @@ static const byte L_sp_521_num_bits_17_table[] = {
     0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
 };
 
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static int sp_521_num_bits_17(const sp_digit* a_p)
+#else
+static int sp_521_num_bits_17(const sp_digit* a)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register const sp_digit* a asm ("r0") = (const sp_digit*)a_p;
     register byte* L_sp_521_num_bits_17_table_c asm ("r1") =
         (byte*)&L_sp_521_num_bits_17_table;
+#else
+    register byte* L_sp_521_num_bits_17_table_c =
+        (byte*)&L_sp_521_num_bits_17_table;
+
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	lr, %[L_sp_521_num_bits_17_table]\n\t"
@@ -125516,18 +128234,30 @@ static int sp_521_num_bits_17(const sp_digit* a_p)
         "\n"
     "L_sp_521_num_bits_17_18_%=: \n\t"
         "mov	%[a], r12\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a),
           [L_sp_521_num_bits_17_table] "+r" (L_sp_521_num_bits_17_table_c)
         :
+#else
+        :
+        : [a] "r" (a),
+          [L_sp_521_num_bits_17_table] "r" (L_sp_521_num_bits_17_table_c)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r12", "lr"
     );
     return (word32)(size_t)a;
 }
 
 #else
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static int sp_521_num_bits_17(const sp_digit* a_p)
+#else
+static int sp_521_num_bits_17(const sp_digit* a)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register const sp_digit* a asm ("r0") = (const sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldr	r1, [%[a], #64]\n\t"
@@ -125721,8 +128451,13 @@ static int sp_521_num_bits_17(const sp_digit* a_p)
         "\n"
     "L_sp_521_num_bits_17_18_%=: \n\t"
         "mov	%[a], r12\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a)
         :
+#else
+        :
+        : [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r1", "r2", "r3", "r12", "lr"
     );
     return (word32)(size_t)a;
@@ -126736,11 +129471,18 @@ typedef struct sp_point_1024 {
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static void sp_1024_mul_16(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static void sp_1024_mul_16(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static void sp_1024_mul_16(sp_digit* r, const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #0x40\n\t"
@@ -136482,8 +139224,13 @@ static void sp_1024_mul_16(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b
         "stm	%[r]!, {r3, r4, r5, r6}\n\t"
         "ldm	sp!, {r3, r4, r5, r6}\n\t"
         "stm	%[r]!, {r3, r4, r5, r6}\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r11",
             "r12"
     );
@@ -136494,10 +139241,16 @@ static void sp_1024_mul_16(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b
  * r  A single precision integer.
  * a  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_1024_sqr_16(sp_digit* r_p, const sp_digit* a_p)
+#else
+static void sp_1024_sqr_16(sp_digit* r, const sp_digit* a)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #0x40\n\t"
@@ -141715,8 +144468,13 @@ static void sp_1024_sqr_16(sp_digit* r_p, const sp_digit* a_p)
         "stm	%[r]!, {r2, r3, r4, r8}\n\t"
         "ldm	sp!, {r2, r3, r4, r8}\n\t"
         "stm	%[r]!, {r2, r3, r4, r8}\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
             "r12"
     );
@@ -141728,11 +144486,19 @@ static void sp_1024_sqr_16(sp_digit* r_p, const sp_digit* a_p)
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_1024_add_16(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_1024_add_16(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_1024_add_16(sp_digit* r, const sp_digit* a,
+    const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a]!, {r3, r4, r5, r6}\n\t"
@@ -141765,8 +144531,13 @@ static sp_digit sp_1024_add_16(sp_digit* r_p, const sp_digit* a_p, const sp_digi
         "stm	%[r]!, {r3, r4, r5, r6}\n\t"
         "mov	%[r], #0\n\t"
         "adc	%[r], %[r], #0\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10"
     );
     return (word32)(size_t)r;
@@ -141777,10 +144548,16 @@ static sp_digit sp_1024_add_16(sp_digit* r_p, const sp_digit* a_p, const sp_digi
  * a  A single precision integer and result.
  * b  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_1024_sub_in_place_32(sp_digit* a_p, const sp_digit* b_p)
+#else
+static sp_digit sp_1024_sub_in_place_32(sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* b asm ("r1") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a], {r2, r3, r4, r5}\n\t"
@@ -141840,8 +144617,13 @@ static sp_digit sp_1024_sub_in_place_32(sp_digit* a_p, const sp_digit* b_p)
         "sbcs	r5, r5, r9\n\t"
         "stm	%[a]!, {r2, r3, r4, r5}\n\t"
         "sbc	%[a], r9, r9\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9"
     );
     return (word32)(size_t)a;
@@ -141853,11 +144635,19 @@ static sp_digit sp_1024_sub_in_place_32(sp_digit* a_p, const sp_digit* b_p)
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_1024_add_32(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_1024_add_32(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_1024_add_32(sp_digit* r, const sp_digit* a,
+    const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a]!, {r3, r4, r5, r6}\n\t"
@@ -141918,8 +144708,13 @@ static sp_digit sp_1024_add_32(sp_digit* r_p, const sp_digit* a_p, const sp_digi
         "stm	%[r]!, {r3, r4, r5, r6}\n\t"
         "mov	%[r], #0\n\t"
         "adc	%[r], %[r], #0\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10"
     );
     return (word32)(size_t)r;
@@ -142000,11 +144795,19 @@ SP_NOINLINE static void sp_1024_mul_32(sp_digit* r, const sp_digit* a,
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_1024_sub_16(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_1024_sub_16(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_1024_sub_16(sp_digit* r, const sp_digit* a,
+    const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a]!, {r3, r4, r5, r6}\n\t"
@@ -142036,8 +144839,13 @@ static sp_digit sp_1024_sub_16(sp_digit* r_p, const sp_digit* a_p, const sp_digi
         "sbcs	r6, r6, r10\n\t"
         "stm	%[r]!, {r3, r4, r5, r6}\n\t"
         "sbc	%[r], r6, r6\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10"
     );
     return (word32)(size_t)r;
@@ -142086,11 +144894,18 @@ SP_NOINLINE static void sp_1024_sqr_32(sp_digit* r, const sp_digit* a)
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static void sp_1024_mul_32(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static void sp_1024_mul_32(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static void sp_1024_mul_32(sp_digit* r, const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #0x100\n\t"
@@ -142273,8 +145088,13 @@ static void sp_1024_mul_32(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b
         "stm	%[r]!, {r3, r4, r6, r7, r8, r9, r10, r11}\n\t"
         "subs	r5, r5, #32\n\t"
         "bgt	L_sp_1024_mul_32_store_%=\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "lr",
             "r11"
     );
@@ -142285,10 +145105,16 @@ static void sp_1024_mul_32(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b
  * r  A single precision integer.
  * a  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_1024_sqr_32(sp_digit* r_p, const sp_digit* a_p)
+#else
+static void sp_1024_sqr_32(sp_digit* r, const sp_digit* a)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "sub	sp, sp, #0x100\n\t"
@@ -142431,8 +145257,13 @@ static void sp_1024_sqr_32(sp_digit* r_p, const sp_digit* a_p)
         "stm	%[r]!, {r3, r4, r6, r7, r8, r9, r10, r11}\n\t"
         "subs	r5, r5, #32\n\t"
         "bgt	L_sp_1024_sqr_32_store_%=\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "lr",
             "r11"
     );
@@ -142530,10 +145361,16 @@ static const sp_point_1024 p1024_base = {
  * a  A single precision integer.
  * b  A single precision integer.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_1024_sub_in_place_32(sp_digit* a_p, const sp_digit* b_p)
+#else
+static sp_digit sp_1024_sub_in_place_32(sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* b asm ("r1") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r12, #0\n\t"
@@ -142552,8 +145389,13 @@ static sp_digit sp_1024_sub_in_place_32(sp_digit* a_p, const sp_digit* b_p)
         "cmp	%[a], lr\n\t"
         "bne	L_sp_1024_sub_in_pkace_32_word_%=\n\t"
         "mov	%[a], r12\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r12",
             "lr"
     );
@@ -142570,13 +145412,20 @@ static sp_digit sp_1024_sub_in_place_32(sp_digit* a_p, const sp_digit* b_p)
  * b  A single precision number to subtract.
  * m  Mask value to apply.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_1024_cond_sub_32(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* b_p, sp_digit m_p)
+#else
+static sp_digit sp_1024_cond_sub_32(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, sp_digit m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
     register sp_digit m asm ("r3") = (sp_digit)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r6, #0\n\t"
@@ -142595,8 +145444,13 @@ static sp_digit sp_1024_cond_sub_32(sp_digit* r_p, const sp_digit* a_p,
         "cmp	lr, #0x80\n\t"
         "blt	L_sp_1024_cond_sub_32_words_%=\n\t"
         "mov	%[r], r12\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b), [m] "+r" (m)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b), [m] "r" (m)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r12", "lr", "r4", "r5", "r6"
     );
     return (word32)(size_t)r;
@@ -142611,13 +145465,20 @@ static sp_digit sp_1024_cond_sub_32(sp_digit* r_p, const sp_digit* a_p,
  * b  A single precision number to subtract.
  * m  Mask value to apply.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_1024_cond_sub_32(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* b_p, sp_digit m_p)
+#else
+static sp_digit sp_1024_cond_sub_32(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, sp_digit m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
     register sp_digit m asm ("r3") = (sp_digit)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	lr, #0\n\t"
@@ -142734,8 +145595,13 @@ static sp_digit sp_1024_cond_sub_32(sp_digit* r_p, const sp_digit* a_p,
         "sbcs	r5, r5, r7\n\t"
         "stm	%[r]!, {r4, r5}\n\t"
         "sbc	%[r], lr, lr\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b), [m] "+r" (m)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b), [m] "r" (m)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r12", "lr", "r4", "r5", "r6", "r7"
     );
     return (word32)(size_t)r;
@@ -142749,11 +145615,19 @@ static sp_digit sp_1024_cond_sub_32(sp_digit* r_p, const sp_digit* a_p,
  * a  A single precision integer.
  * b  A single precision integer.
  */
-static sp_digit sp_1024_add_32(sp_digit* r_p, const sp_digit* a_p, const sp_digit* b_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static sp_digit sp_1024_add_32(sp_digit* r_p, const sp_digit* a_p,
+    const sp_digit* b_p)
+#else
+static sp_digit sp_1024_add_32(sp_digit* r, const sp_digit* a,
+    const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r3, #0\n\t"
@@ -142773,8 +145647,13 @@ static sp_digit sp_1024_add_32(sp_digit* r_p, const sp_digit* a_p, const sp_digi
         "cmp	%[a], r12\n\t"
         "bne	L_sp_1024_add_32_word_%=\n\t"
         "mov	%[r], r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11",
             "r3", "r12"
     );
@@ -142789,11 +145668,17 @@ static sp_digit sp_1024_add_32(sp_digit* r_p, const sp_digit* a_p, const sp_digi
  * a  A single precision integer.
  * b  A single precision digit.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_1024_mul_d_32(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
+#else
+static void sp_1024_mul_d_32(sp_digit* r, const sp_digit* a, sp_digit b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register sp_digit b asm ("r2") = (sp_digit)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         /* A[0] * B */
@@ -142874,8 +145759,13 @@ static void sp_1024_mul_d_32(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
         "cmp	r9, #0x80\n\t"
         "blt	L_sp_1024_mul_d_32_word_%=\n\t"
         "str	r3, [%[r], #128]\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8", "r9"
     );
 }
@@ -142887,11 +145777,17 @@ static void sp_1024_mul_d_32(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
  * a  A single precision integer.
  * b  A single precision digit.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_1024_mul_d_32(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
+#else
+static void sp_1024_mul_d_32(sp_digit* r, const sp_digit* a, sp_digit b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register sp_digit b asm ("r2") = (sp_digit)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         /* A[0] * B */
@@ -143915,8 +146811,13 @@ static void sp_1024_mul_d_32(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
 #endif
         "stm	%[r]!, {r4}\n\t"
         "str	r5, [%[r]]\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "r8"
     );
 }
@@ -143932,11 +146833,17 @@ static void sp_1024_mul_d_32(sp_digit* r_p, const sp_digit* a_p, sp_digit b_p)
  *
  * Note that this is an approximate div. It may give an answer 1 larger.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit div_1024_word_32(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
+#else
+static sp_digit div_1024_word_32(sp_digit d1, sp_digit d0, sp_digit div)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit d1 asm ("r0") = (sp_digit)d1_p;
     register sp_digit d0 asm ("r1") = (sp_digit)d0_p;
     register sp_digit div asm ("r2") = (sp_digit)div_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "lsr	r6, %[div], #16\n\t"
@@ -143974,8 +146881,13 @@ static sp_digit div_1024_word_32(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
         "sub	%[d0], %[d0], r3\n\t"
         "udiv	r3, %[d0], %[div]\n\t"
         "add	%[d1], r4, r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [d1] "+r" (d1), [d0] "+r" (d0), [div] "+r" (div)
         :
+#else
+        :
+        : [d1] "r" (d1), [d0] "r" (d0), [div] "r" (div)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8"
     );
     return (word32)(size_t)d1;
@@ -143991,11 +146903,17 @@ static sp_digit div_1024_word_32(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
  *
  * Note that this is an approximate div. It may give an answer 1 larger.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit div_1024_word_32(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
+#else
+static sp_digit div_1024_word_32(sp_digit d1, sp_digit d0, sp_digit div)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit d1 asm ("r0") = (sp_digit)d1_p;
     register sp_digit d0 asm ("r1") = (sp_digit)d0_p;
     register sp_digit div asm ("r2") = (sp_digit)div_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "lsr	lr, %[div], #1\n\t"
@@ -144112,8 +147030,13 @@ static sp_digit div_1024_word_32(sp_digit d1_p, sp_digit d0_p, sp_digit div_p)
         "subs	r6, %[div], r7\n\t"
         "sbc	r6, r6, r6\n\t"
         "sub	%[d1], r3, r6\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [d1] "+r" (d1), [d0] "+r" (d0), [div] "+r" (div)
         :
+#else
+        :
+        : [d1] "r" (d1), [d0] "r" (d0), [div] "r" (div)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8"
     );
     return (word32)(size_t)d1;
@@ -144157,10 +147080,16 @@ static void sp_1024_mask_32(sp_digit* r, const sp_digit* a, sp_digit m)
  * return -ve, 0 or +ve if a is less than, equal to or greater than b
  * respectively.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_int32 sp_1024_cmp_32(const sp_digit* a_p, const sp_digit* b_p)
+#else
+static sp_int32 sp_1024_cmp_32(const sp_digit* a, const sp_digit* b)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register const sp_digit* a asm ("r0") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r1") = (const sp_digit*)b_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r2, #-1\n\t"
@@ -144541,8 +147470,13 @@ static sp_int32 sp_1024_cmp_32(const sp_digit* a_p, const sp_digit* b_p)
         "eor	r2, r2, r3\n\t"
 #endif /*WOLFSSL_SP_SMALL */
         "mov	%[a], r2\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [b] "+r" (b)
         :
+#else
+        :
+        : [a] "r" (a), [b] "r" (b)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r12", "lr", "r4", "r5", "r6"
     );
     return (word32)(size_t)a;
@@ -144884,11 +147818,19 @@ static int sp_1024_point_to_ecc_point_32(const sp_point_1024* p, ecc_point* pm)
  * m   The single precision number representing the modulus.
  * mp  The digit representing the negative inverse of m mod 2^n.
  */
-static SP_NOINLINE void sp_1024_mont_reduce_32(sp_digit* a_p, const sp_digit* m_p, sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_1024_mont_reduce_32(sp_digit* a_p,
+    const sp_digit* m_p, sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_1024_mont_reduce_32(sp_digit* a, const sp_digit* m,
+    sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* m asm ("r1") = (const sp_digit*)m_p;
     register sp_digit mp asm ("r2") = (sp_digit)mp_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
 #if !(defined(WOLFSSL_ARM_ARCH) && (WOLFSSL_ARM_ARCH < 4))
@@ -145855,8 +148797,13 @@ static SP_NOINLINE void sp_1024_mont_reduce_32(sp_digit* a_p, const sp_digit* m_
         "sbc	r10, r10, r10\n\t"
         "orr	r3, r3, r10\n\t"
         "mov	%[mp], r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [m] "+r" (m), [mp] "+r" (mp)
         :
+#else
+        :
+        : [a] "r" (a), [m] "r" (m), [mp] "r" (mp)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8", "r9",
             "r10", "r11"
     );
@@ -145870,11 +148817,19 @@ static SP_NOINLINE void sp_1024_mont_reduce_32(sp_digit* a_p, const sp_digit* m_
  * m   The single precision number representing the modulus.
  * mp  The digit representing the negative inverse of m mod 2^n.
  */
-static SP_NOINLINE void sp_1024_mont_reduce_32(sp_digit* a_p, const sp_digit* m_p, sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_1024_mont_reduce_32(sp_digit* a_p,
+    const sp_digit* m_p, sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_1024_mont_reduce_32(sp_digit* a, const sp_digit* m,
+    sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* m asm ("r1") = (const sp_digit*)m_p;
     register sp_digit mp asm ("r2") = (sp_digit)mp_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldr	r11, [%[m]]\n\t"
@@ -146156,8 +149111,13 @@ static SP_NOINLINE void sp_1024_mont_reduce_32(sp_digit* a_p, const sp_digit* m_
         "sbc	r10, r10, r10\n\t"
         "orr	r3, r3, r10\n\t"
         "mov	%[mp], r3\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [m] "+r" (m), [mp] "+r" (mp)
         :
+#else
+        :
+        : [a] "r" (a), [m] "r" (m), [mp] "r" (mp)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8", "r9",
             "r10", "r11"
     );
@@ -146171,11 +149131,19 @@ static SP_NOINLINE void sp_1024_mont_reduce_32(sp_digit* a_p, const sp_digit* m_
  * m   The single precision number representing the modulus.
  * mp  The digit representing the negative inverse of m mod 2^n.
  */
-static SP_NOINLINE void sp_1024_mont_reduce_32(sp_digit* a_p, const sp_digit* m_p, sp_digit mp_p)
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
+static SP_NOINLINE void sp_1024_mont_reduce_32(sp_digit* a_p,
+    const sp_digit* m_p, sp_digit mp_p)
+#else
+static SP_NOINLINE void sp_1024_mont_reduce_32(sp_digit* a, const sp_digit* m,
+    sp_digit mp)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* a asm ("r0") = (sp_digit*)a_p;
     register const sp_digit* m asm ("r1") = (const sp_digit*)m_p;
     register sp_digit mp asm ("r2") = (sp_digit)mp_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         /* i = 0 */
@@ -146367,8 +149335,13 @@ static SP_NOINLINE void sp_1024_mont_reduce_32(sp_digit* a_p, const sp_digit* m_
         "sbc	r3, r3, r3\n\t"
         "orr	lr, lr, r3\n\t"
         "mov	%[mp], lr\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [a] "+r" (a), [m] "+r" (m), [mp] "+r" (mp)
         :
+#else
+        :
+        : [a] "r" (a), [m] "r" (m), [mp] "r" (mp)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r3", "r12", "lr", "r4", "r5", "r6", "r7", "r8", "r9",
             "r10", "r11"
     );
@@ -146520,13 +149493,20 @@ static void sp_1024_map_32(sp_point_1024* r, const sp_point_1024* p,
  * b   Second number to add in Montgomery form.
  * m   Modulus (prime).
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_1024_mont_add_32(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* b_p, const sp_digit* m_p)
+#else
+static void sp_1024_mont_add_32(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, const sp_digit* m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
     register const sp_digit* m asm ("r3") = (const sp_digit*)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r12, #0\n\t"
@@ -146681,8 +149661,13 @@ static void sp_1024_mont_add_32(sp_digit* r_p, const sp_digit* a_p,
         "sbcs	r6, r6, r10\n\t"
         "sbc	r7, r7, r11\n\t"
         "stm	%[r]!, {r4, r5, r6, r7}\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b), [m] "+r" (m)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b), [m] "r" (m)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11",
             "r12"
     );
@@ -146694,12 +149679,19 @@ static void sp_1024_mont_add_32(sp_digit* r_p, const sp_digit* a_p,
  * a   Number to double in Montgomery form.
  * m   Modulus (prime).
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_1024_mont_dbl_32(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* m_p)
+#else
+static void sp_1024_mont_dbl_32(sp_digit* r, const sp_digit* a,
+    const sp_digit* m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* m asm ("r2") = (const sp_digit*)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r12, #0\n\t"
@@ -146838,8 +149830,13 @@ static void sp_1024_mont_dbl_32(sp_digit* r_p, const sp_digit* a_p,
         "sbcs	r6, r6, r10\n\t"
         "sbc	r7, r7, r11\n\t"
         "stm	%[r]!, {r4, r5, r6, r7}\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [m] "+r" (m)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [m] "r" (m)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r8", "r9", "r10", "r11", "r4", "r5", "r6", "r7",
             "r12"
     );
@@ -146851,12 +149848,19 @@ static void sp_1024_mont_dbl_32(sp_digit* r_p, const sp_digit* a_p,
  * a   Number to triple in Montgomery form.
  * m   Modulus (prime).
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_1024_mont_tpl_32(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* m_p)
+#else
+static void sp_1024_mont_tpl_32(sp_digit* r, const sp_digit* a,
+    const sp_digit* m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* m asm ("r2") = (const sp_digit*)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r12, #0\n\t"
@@ -147150,8 +150154,13 @@ static void sp_1024_mont_tpl_32(sp_digit* r_p, const sp_digit* a_p,
         "sbcs	r6, r6, r10\n\t"
         "sbc	r7, r7, r11\n\t"
         "stm	%[r]!, {r4, r5, r6, r7}\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [m] "+r" (m)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [m] "r" (m)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r8", "r9", "r10", "r11", "r4", "r5", "r6", "r7",
             "r12"
     );
@@ -147164,13 +150173,20 @@ static void sp_1024_mont_tpl_32(sp_digit* r_p, const sp_digit* a_p,
  * b   Number to subtract with in Montgomery form.
  * m   Modulus (prime).
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_1024_mont_sub_32(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* b_p, const sp_digit* m_p)
+#else
+static void sp_1024_mont_sub_32(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, const sp_digit* m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
     register const sp_digit* m asm ("r3") = (const sp_digit*)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a]!, {r4, r5, r6, r7}\n\t"
@@ -147319,8 +150335,13 @@ static void sp_1024_mont_sub_32(sp_digit* r_p, const sp_digit* a_p,
         "adcs	r6, r6, r10\n\t"
         "adc	r7, r7, r11\n\t"
         "stm	%[r]!, {r4, r5, r6, r7}\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b), [m] "+r" (m)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b), [m] "r" (m)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11",
             "r12"
     );
@@ -147335,13 +150356,20 @@ static void sp_1024_mont_sub_32(sp_digit* r_p, const sp_digit* a_p,
  * b  A single precision number to add.
  * m  Mask value to apply.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_1024_cond_add_32(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* b_p, sp_digit m_p)
+#else
+static sp_digit sp_1024_cond_add_32(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, sp_digit m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
     register sp_digit m asm ("r3") = (sp_digit)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	lr, #0\n\t"
@@ -147360,8 +150388,13 @@ static sp_digit sp_1024_cond_add_32(sp_digit* r_p, const sp_digit* a_p,
         "cmp	r12, #0x80\n\t"
         "blt	L_sp_1024_cond_add_32_words_%=\n\t"
         "mov	%[r], lr\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b), [m] "+r" (m)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b), [m] "r" (m)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r12", "lr", "r4", "r5", "r6"
     );
     return (word32)(size_t)r;
@@ -147376,13 +150409,20 @@ static sp_digit sp_1024_cond_add_32(sp_digit* r_p, const sp_digit* a_p,
  * b  A single precision number to add.
  * m  Mask value to apply.
  */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static sp_digit sp_1024_cond_add_32(sp_digit* r_p, const sp_digit* a_p,
     const sp_digit* b_p, sp_digit m_p)
+#else
+static sp_digit sp_1024_cond_add_32(sp_digit* r, const sp_digit* a,
+    const sp_digit* b, sp_digit m)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
     register const sp_digit* b asm ("r2") = (const sp_digit*)b_p;
     register sp_digit m asm ("r3") = (sp_digit)m_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "mov	r8, #0\n\t"
@@ -147499,18 +150539,29 @@ static sp_digit sp_1024_cond_add_32(sp_digit* r_p, const sp_digit* a_p,
         "adcs	r5, r5, r7\n\t"
         "stm	%[r]!, {r4, r5}\n\t"
         "adc	%[r], r8, r8\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a), [b] "+r" (b), [m] "+r" (m)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a), [b] "r" (b), [m] "r" (m)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r12", "lr", "r4", "r5", "r6", "r7", "r8"
     );
     return (word32)(size_t)r;
 }
 
 #endif /* WOLFSSL_SP_SMALL */
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
 static void sp_1024_rshift1_32(sp_digit* r_p, const sp_digit* a_p)
+#else
+static void sp_1024_rshift1_32(sp_digit* r, const sp_digit* a)
+#endif /* WOLFSSL_NO_VAR_ASSIGN_REG */
 {
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
     register sp_digit* r asm ("r0") = (sp_digit*)r_p;
     register const sp_digit* a asm ("r1") = (const sp_digit*)a_p;
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
 
     __asm__ __volatile__ (
         "ldm	%[a], {r2, r3}\n\t"
@@ -147639,8 +150690,13 @@ static void sp_1024_rshift1_32(sp_digit* r_p, const sp_digit* a_p)
         "lsr	r3, r3, #1\n\t"
         "str	r2, [%[r], #120]\n\t"
         "str	r3, [%[r], #124]\n\t"
+#ifndef WOLFSSL_NO_VAR_ASSIGN_REG
         : [r] "+r" (r), [a] "+r" (a)
         :
+#else
+        :
+        : [r] "r" (r), [a] "r" (a)
+#endif /* !WOLFSSL_NO_VAR_ASSIGN_REG */
         : "memory", "cc", "r2", "r3", "r4"
     );
 }
@@ -156607,9 +159663,9 @@ static void sp_1024_from_bin(sp_digit* r, int size, const byte* a, int n)
         }
 #else
         switch (i) {
-            case 2: d[2] = a[2]; //fallthrough
-            case 1: d[1] = a[1]; //fallthrough
-            case 0: d[0] = a[0]; //fallthrough
+            case 2: d[i-2] = a[2]; //fallthrough
+            case 1: d[i-1] = a[1]; //fallthrough
+            case 0: d[i-0] = a[0]; //fallthrough
         }
 #endif
         j++;
