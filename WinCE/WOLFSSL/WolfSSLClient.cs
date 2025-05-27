@@ -36,12 +36,27 @@ namespace NETtime.WinCE
         /// <param name="msg">message to log</param>
         public static void standard_log(int lvl, string msg)
         {
-            Console.WriteLine(wolfssl.UnicodeToAscii(msg));
+            string logMsg = wolfssl.MultiByteToWideChar(msg);
+            Console.WriteLine(logMsg);
         }
 
         public static void ConnectToServer()
         {
             StringBuilder caCert = new StringBuilder(Utility.LocalPath + "\\Cert\\ca-cert.pem");
+
+            /* string conversion tests */
+            /* WinCE:       using Unicode 16-bit
+             * wolfSSL DLL: using multi-byte (8-bit) */
+            string caCert1 = Path.GetFullPath("\\Cert\\ca-cert.pem");
+            string uCaCert1 = wolfssl.WideCharToMultiByte(caCert1);
+            string bCaCert1 = wolfssl.MultiByteToWideChar(uCaCert1);
+            Console.WriteLine("Before: " + caCert1 + ", After: " + bCaCert1);
+            /* odd length test */
+            string caCert2 = Path.GetFullPath("\\Certs\\ca-cert.pem");
+            string uCaCert2 = wolfssl.WideCharToMultiByte(caCert2);
+            string bCaCert2 = wolfssl.MultiByteToWideChar(uCaCert2);
+            Console.WriteLine("Before: " + caCert2 + ", After: " + bCaCert2);
+
             IntPtr ssl = IntPtr.Zero;
             IntPtr ctx = IntPtr.Zero;
 
@@ -50,8 +65,8 @@ namespace NETtime.WinCE
             string host = "stratus-clock-n2a.cloud.paychex.com";
             int port = 443;
 
-            //Console.WriteLine("Enabling Debug");
-            //wolfssl.Debugging_ON();
+            Console.WriteLine("Enabling Debug");
+            wolfssl.Debugging_ON();
 
             // example of function used for setting logging
             Console.WriteLine("Setting Logging");
@@ -122,6 +137,7 @@ namespace NETtime.WinCE
                 clean(ssl, ctx);
                 return;
             }
+            Console.WriteLine("TLS Connected " + wolfssl.get_error(ssl));
             Console.WriteLine("TLS Connected: version is " + wolfssl.get_version(ssl));
             Console.WriteLine("TLS Cipher Suite is " + wolfssl.get_current_cipher(ssl));
 

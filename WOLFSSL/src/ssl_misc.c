@@ -470,7 +470,9 @@ static int wolfssl_read_file_static(const char* fname, StaticBuffer* content,
         ret = WOLFSSL_BAD_FILE;
     }
     /* Open file for reading. */
+    WOLFSSL_MSG(fname);
     if ((ret == 0) && ((file = XFOPEN(fname, "rb")) == XBADFILE)) {
+        WOLFSSL_MSG("Failed to open file");
         ret = WOLFSSL_BAD_FILE;
     }
     if (ret == 0) {
@@ -484,6 +486,7 @@ static int wolfssl_read_file_static(const char* fname, StaticBuffer* content,
     /* Read data from file. */
     if ((ret == 0) && ((size_t)XFREAD(content->buffer, 1, (size_t)sz, file) !=
             (size_t)sz)) {
+        WOLFSSL_MSG("Failed to read file");
         ret = WOLFSSL_BAD_FILE;
     }
 
