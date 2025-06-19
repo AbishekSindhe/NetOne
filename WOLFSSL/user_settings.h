@@ -27,8 +27,10 @@
 #define USE_WOLF_STRTOK
 #define XSNPRINTF StringCbPrintfA
 #include <string.h> /* for strcpy_s */
+#define NO_THEAD_LS
 
-
+/* Enables the X509_STORE_CTX_get_error function required to get error code */
+#define OPENSSL_EXTRA_X509_SMALL
 
 /* Features */
 #define WOLFSSL_TLS13
@@ -43,8 +45,12 @@
     #define WOLFSSL_KEY_GEN
 #endif
 
-#if 1 /* debug messages - logging */
+#if 0 /* debug messages - logging */
     #define DEBUG_WOLFSSL
+	#define WOLFSSL_DEBUG_MEMORY
+	#define WOLFSSL_DEBUG_MEMORY_PRINT
+	#define WOLFSSL_TRACK_MEMORY
+	#define SINGLE_THREADED
 #endif
 
 /* TLS Extensions */

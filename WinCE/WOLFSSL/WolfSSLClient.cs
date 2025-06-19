@@ -15,11 +15,24 @@ namespace NETtime.WinCE
 {
     public static class WOLFSSLWrapper
     {
+        /// <summary>
+        /// Verification callback
+        /// </summary>
+        /// <param name="preverify">1=Verify Okay, 0=Failure</param>
+        /// <param name="x509_ctx">Certificate in WOLFSSL_X509_STORE_CTX format</param>
         private static int myVerify(int preverify, IntPtr x509_ctx)
         {
-            /* Use the provided verification */
+            int verify = preverify;
+            int error = wolfssl.X509_STORE_CTX_get_error(x509_ctx);
+            const int ASN_BEFORE_DATE_E = -150;  /* ASN date error, current date before */
+
+            if (error == ASN_BEFORE_DATE_E) {
+                Console.WriteLine("Overriding before date error");
+                verify = 1; /* override error */
+            }
+
             /* Can optionally override failures by returning non-zero value */
-            return preverify;
+            return verify;
         }
 
         private static void clean(IntPtr ssl, IntPtr ctx)
