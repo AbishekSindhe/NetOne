@@ -15,6 +15,8 @@ namespace NETtime.WinCE
 {
     public static class WOLFSSLWrapper
     {
+        private static wolfssl.WOLFSSL_ALERT_HISTORY myHistory = new wolfssl.WOLFSSL_ALERT_HISTORY();
+
         /// <summary>
         /// Verification callback
         /// </summary>
@@ -24,9 +26,8 @@ namespace NETtime.WinCE
         {
             int verify = preverify;
             int error = wolfssl.X509_STORE_CTX_get_error(x509_ctx);
-            const int ASN_BEFORE_DATE_E = -150;  /* ASN date error, current date before */
-
-            if (error == ASN_BEFORE_DATE_E) {
+            if (error == wolfcrypt.ASN_BEFORE_DATE_E)
+            {
                 Console.WriteLine("Overriding before date error");
                 verify = 1; /* override error */
             }
@@ -49,8 +50,42 @@ namespace NETtime.WinCE
         /// <param name="msg">message to log</param>
         public static void standard_log(int lvl, string msg)
         {
+            /* try multi-byte and fall back to msg if invalid */
             string logMsg = wolfssl.MultiByteToWideChar(msg);
+            if (logMsg.Length < msg.Length / 2)
+            {
+                /* not multi-byte. internal log() are already wide char */
+                logMsg = msg;
+            }
             Console.WriteLine(logMsg);
+        }
+
+        private static void show_alert_history_code(wolfssl.WOLFSSL_ALERT h, string m)
+        {
+            /* VS initializes .code and .level to zero; wolfSSL sets to -1 until there's a valid value. */
+            if ((h.code > 0) || (h.level > 0))
+            {
+                Console.WriteLine(m + " code:  " + h.code.ToString());
+            }
+            if ((h.code > 0) || (h.level > 0))
+            {
+                Console.WriteLine(m + " level: " + h.level.ToString());
+            }
+        }
+
+        private static void show_alert_history(IntPtr ssl)
+        {
+            int ret = 0;
+            ret = wolfssl.get_alert_history(ssl, ref myHistory);
+            if (ret == wolfssl.SUCCESS)
+            {
+                show_alert_history_code(myHistory.last_tx, "myHistory last_tx");
+                show_alert_history_code(myHistory.last_rx, "myHistory last_rx");
+            }
+            else
+            {
+                Console.WriteLine("Failed: call to get_alert_history failed with error " + ret.ToString());
+            }
         }
 
         public static void ConnectToServer()
@@ -146,6 +181,7 @@ namespace NETtime.WinCE
             {
                 /* get and print out the error */
                 Console.WriteLine("TLS Connect failed: " + wolfssl.get_error(ssl));
+                show_alert_history(ssl);
                 tcp.Close();
                 clean(ssl, ctx);
                 return;

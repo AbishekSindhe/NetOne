@@ -19,10 +19,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1335, USA
  */
 
+
+/* CE Not always reliably detected. Define our own WindowsCE as needed. */
+#if _WIN32_WCE || WINCE || PocketPC
+    /* WindowsCE should have been defined in the Project and user_settings.h  */
+    #if !WindowsCE
+        #define WindowsCE
+    #endif
+#endif
+
+
 using System;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading;
 
 namespace wolfSSL.CSharp
 {
