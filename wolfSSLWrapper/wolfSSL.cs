@@ -20,10 +20,18 @@
  */
 
 
+/* CE Not always reliably detected. Define our own WindowsCE as needed. */
+#if _WIN32_WCE || WINCE || PocketPC
+    /* WindowsCE should have been defined in the Project and user_settings.h  */
+    #if !WindowsCE
+        #define WindowsCE
+    #endif
+#endif
+
+
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -36,39 +44,199 @@ namespace wolfSSL.CSharp
 
         /* wait for 6 seconds default on TCP socket state poll if timeout not set */
         private const int WC_WAIT = 6000000;
+        private static bool verbose = false;
+
+        /********************************
+         * The WOLFSSL_ALERT_HISTORY
+         */
+        [StructLayout(LayoutKind.Sequential)]
+        public struct WOLFSSL_ALERT
+        {
+            public int code;
+            public int level;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct WOLFSSL_ALERT_HISTORY
+        {
+            public WOLFSSL_ALERT last_rx;
+            public WOLFSSL_ALERT last_tx;
+        }
+
+        public static void SetVerbosity(bool b) {
+            verbose = b;
+        }
+
+        /// <summary>
+        /// Use the SetDllDirectory from Windows kernel32.dll to set DLL location of wolfSSL
+        /// </summary>
+        /// <param name="lpPathName"></param>
+        /// <returns></returns>
+        [DllImport("kernel32.dll", SetLastError = true)]
+        static extern bool SetDllDirectory(string lpPathName);
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="p"></param>
+        /// <returns></returns>
+        public static bool LoadDLL(string wolfsslPath) {
+            string baseDir = "";
+            bool ret = false;
+#if WindowsCE
+            string codeBase = System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase;
+            string path = codeBase.Replace("file://", "").Replace("/", "\\");
+            string currentDir = System.IO.Path.GetDirectoryName(path);
+            Console.WriteLine("Base Directory: " + currentDir);
+            /*
+             * NOTICE: If you find yourself here as the wolfssl.dll file was not loaded,
+             * there are limited options on a CE Device.
+             *
+             * Please check if:
+             *
+             * 1) The native library wolfssl.dll is not found in the expected path at runtime.
+             * 2) The wolfssl.dll is found, but it is not compatible with the process architecture (e.g., 32-bit vs 64-bit mismatch).
+             * 3) The wolfssl.dll is found, but is missing dependencies (such as a required MSVC runtime or another .dll it links to).
+             *
+             * If everything is ok, try copying the wolfssl.dll file to the target \windows directory.
+             *
+             */
+#else
+            /* Try to find the wolfSSL in all the usual build directories (non-CE platforms only) */
+            string[] subDirsToCheck;
+            if (verbose) {
+                Console.WriteLine("AppDomain.CurrentDomain.BaseDirectory: " + AppDomain.CurrentDomain.BaseDirectory);
+            }
+            bool is64Bit = (IntPtr.Size == 8);
+#if DEBUG
+            if (is64Bit) {
+                subDirsToCheck = new string[] { "Debug", "Debug\\x64" };
+            }
+            else {
+                subDirsToCheck = new string[] { "Debug", "Debug\\x86", "Debug\\Win32" };
+            }
+#elif RELEASE
+            if (is64Bit) {
+                subDirsToCheck = new string[] { "Release", "Release\\x64" };
+            }
+            else {
+                subDirsToCheck = new string[] { "Release", "Release\\x86", "Release\\Win32" };
+            }
+#else
+    #pragma "Only DEBUG and RELEASE supported"
+#endif
+            /* We'll search for alternative locations of a compiled wolfssl.dll only on non-CE targets */
+            if (wolfsslPath == "") {
+                /* wolfSSL project should have created a DLL in [WOLFSSL_ROOT]\Debug, some number of directories up from here:  */
+                /* baseDir = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\..\..\..\Debug")); */
+                string dir = Environment.CurrentDirectory;
+                if (verbose) {
+                    Console.WriteLine("Looking for wolfSSL in parents, starting from: " + dir);
+                }
+
+                while ((!string.IsNullOrEmpty(dir) && Directory.Exists(dir)) || !ret) {
+                    for (int i = 0; i < subDirsToCheck.Length; i++) {
+                        string subdir = Path.Combine(dir, subDirsToCheck[i]);
+                        string candidate = Path.Combine(subdir, wolfssl_dll);
+                        if (verbose) {
+                            Console.WriteLine("Looking in: " + subdir);
+                        }
+                        if (File.Exists(candidate)) {
+                            if (verbose) {
+                                Console.WriteLine("Found wolfssl.dll: " + candidate);
+                            }
+                            /* Be sure to use path without filename in call to SetDllDirectory */
+                            baseDir = subdir;
+                            ret = true;
+                            break;
+                        }
+                    }
+
+                    if (ret) {
+                        break;
+                    }
+
+                    DirectoryInfo parent = Directory.GetParent(dir);
+                    if (parent == null)
+                        break;
+
+                    dir = parent.FullName;
+                }
+
+            }
+            else {
+                baseDir = System.IO.Path.GetDirectoryName(wolfsslPath);
+            }
+            /* end of !WindowsCE directory search */
+#endif
+            /* When in verbose mode, show the details of the wolfssl.dll file being used */
+            if (verbose) {
+                String wolfssl_path = Path.Combine(baseDir, wolfssl_dll);
+                if (File.Exists(wolfssl_path)) {
+                    FileInfo info = new FileInfo(wolfssl_path);
+                    Console.WriteLine("Found: " + wolfssl_path);
+                    Console.WriteLine("  Size: " + info.Length + " bytes");
+                    Console.WriteLine("  Modified: " + info.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss"));
+                }
+                else {
+                    Console.WriteLine("File not found: " + wolfssl_path);
+                }
+            }
+
+            if (SetDllDirectory(baseDir)) {
+                if (verbose) {
+                    Console.WriteLine("Successfully SetDllDirectory to: " + baseDir);
+                }
+                ret = true;
+            }
+            else {
+                Console.WriteLine("Failed SetDllDirectory for: " + baseDir);
+            }
+            return ret;
+        }
 
         /********************************
          * Utility String Conversion functions
          */
 #if WindowsCE
         /// <summary>
-        /// Convert unicode string to ASCII
+        /// Convert MBCS (8-bit single/multi byte) to Wide Char/Unicode (16-bit) character set
         /// </summary>
-        public static string UnicodeToAscii(string msg)
+        public static string MultiByteToWideChar(string msg)
         {
             if (msg == null)
                 return null;
-            /* Convert Unicode to Bytes */
+            /* Convert to Byte Array */
             byte[] bytes = Encoding.Unicode.GetBytes((string)msg.ToString());
-            /* Convert to ASCII */
-            return Encoding.ASCII.GetString(bytes, 0, bytes.Length);
+            /* Convert to String */
+            string ret = Encoding.ASCII.GetString(bytes, 0, bytes.Length);
+            /* Remove possible extra null terminator */
+            int len = 0;
+            while (len < ret.Length && ret[len] != 0) len++;
+            return ret.Substring(0, len);
         }
 
         /// <summary>
-        /// Convert string to Unicode
+        /// Convert Unicode/Wide Char (16-bit) to MBCS (8-bit single/multi byte) character set
         /// </summary>
-        public static string AsciiToUnicode(string msg)
+        public static string WideCharToMultiByte(string msg)
         {
             if (msg == null)
                 return null;
-            /* Convert ASCII to Bytes */
-            byte[] bytes = Encoding.ASCII.GetBytes((string)msg.ToString());
-            /* Convert to Unicode */
+            /* Get length and round up to even for multibyte / unicode */
+            int msgLen = msg.Length;
+            msgLen = ((msgLen + 1) & ~1);
+            byte[] bytes = new byte[msgLen];
+            /* Convert to Byte Array */
+            byte[] msgBytes = Encoding.ASCII.GetBytes((string)msg.ToString());
+            msgBytes.CopyTo(bytes, 0);
+            /* Convert to String */
             return Encoding.Unicode.GetString(bytes, 0, bytes.Length);
         }
 
         /// <summary>
-        /// WinCE version of Marshal for Unicode or Multi-byte pointer to ASCII string
+        /// WinCE version of Marshal for Multi-byte pointer to ASCII string
+        /// Similar conversion used in MultiByteToWideChar, but input is IntPtr
         /// </summary>
         public static string PtrToStringAnsi(IntPtr ptr)
         {
@@ -93,6 +261,21 @@ namespace wolfSSL.CSharp
             return Marshal.PtrToStringAnsi(ptr);
         }
 #endif
+
+        /// <summary>
+        /// All platform Marshal for ASCII string to Multi-byte pointer
+        /// See companion PtrToStringAnsi
+        /// </summary>
+        public static IntPtr StringToAnsiPtr(string str) {
+            if (str == null) {
+                return IntPtr.Zero;
+            }
+
+            byte[] ansiBytes = Encoding.ASCII.GetBytes(str + '\0'); // ensure null-terminated
+            IntPtr ptr = Marshal.AllocHGlobal(ansiBytes.Length);
+            Marshal.Copy(ansiBytes, 0, ptr, ansiBytes.Length);
+            return ptr;
+        }
 
 
         /********************************
@@ -290,7 +473,6 @@ namespace wolfSSL.CSharp
                 }
             }
         }
-
 
         /********************************
          * Init wolfSSL library
@@ -544,7 +726,7 @@ namespace wolfSSL.CSharp
         [DllImport(wolfssl_dll, CallingConvention = CallingConvention.Cdecl)]
         private extern static int wolfSSL_set_cipher_list(IntPtr ssl, StringBuilder ciphers);
         [DllImport(wolfssl_dll, CallingConvention = CallingConvention.Cdecl)]
-        private extern static int wolfSSL_get_ciphers(StringBuilder ciphers, int sz);
+        private extern static int wolfSSL_get_ciphers(string ciphers, int sz);
         [DllImport(wolfssl_dll, CallingConvention = CallingConvention.Cdecl)]
         private extern static IntPtr wolfSSL_get_cipher(IntPtr ssl);
         [DllImport(wolfssl_dll, CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
@@ -562,31 +744,46 @@ namespace wolfSSL.CSharp
          */
 #if WindowsCE
         [DllImport(wolfssl_dll)]
-        private extern static IntPtr wolfSSL_ERR_error_string(uint err, StringBuilder errOut);
+        private extern static IntPtr wolfSSL_ERR_reason_error_string(uint err);
         [DllImport(wolfssl_dll)]
         private extern static int wolfSSL_get_error(IntPtr ssl, int err);
+        [DllImport(wolfssl_dll)]
+        private extern static int wolfSSL_get_alert_history(IntPtr ssl, ref WOLFSSL_ALERT_HISTORY h);
+        /* No decorator needed for loggingCb, Note msg is String here, not StringBuilder */
         public delegate void loggingCb(int lvl, string msg);
+        /* No decorator needed for loggingCbEx */
+        public delegate void loggingCbEx(int lvl, IntPtr msg);
         [DllImport(wolfssl_dll)]
         private extern static void wolfSSL_Debugging_ON();
         [DllImport(wolfssl_dll)]
         private extern static void wolfSSL_Debugging_OFF();
         [DllImport(wolfssl_dll)]
         private extern static int wolfSSL_SetLoggingCb(loggingCb vc);
+
+        /* Internal field to store the original logging callback: string msg */
+        private static loggingCb internal_log;
 #else
         [DllImport(wolfssl_dll, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        private extern static IntPtr wolfSSL_ERR_error_string(uint err, StringBuilder errOut);
+        private extern static IntPtr wolfSSL_ERR_reason_error_string(uint err);
         [DllImport(wolfssl_dll, CallingConvention = CallingConvention.Cdecl)]
         private extern static int wolfSSL_get_error(IntPtr ssl, int err);
+        [DllImport(wolfssl_dll, CallingConvention = CallingConvention.Cdecl)]
+        private extern static int wolfSSL_get_alert_history(IntPtr ssl, ref WOLFSSL_ALERT_HISTORY h);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void loggingCb(int lvl, StringBuilder msg);
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate void loggingCbEx(int level, IntPtr msg);
         [DllImport(wolfssl_dll, CallingConvention = CallingConvention.Cdecl)]
         private extern static void wolfSSL_Debugging_ON();
         [DllImport(wolfssl_dll, CallingConvention = CallingConvention.Cdecl)]
         private extern static void wolfSSL_Debugging_OFF();
         [DllImport(wolfssl_dll, CallingConvention = CallingConvention.Cdecl)]
-        private extern static int wolfSSL_SetLoggingCb(loggingCb vc);
+        private extern static int wolfSSL_SetLoggingCb(loggingCbEx vc);
+
+        /* Internal fields to store the non-CE logging callback; StringBuilder msg */
+        private static loggingCbEx internal_log_ex         = null; /* keep reference to prevent GC         */
+        private static loggingCbEx internal_bridge_cb      = null; /* helper when using original loggingCb */
 #endif
-        private static loggingCb internal_log;
 
         /********************************
          * DH
@@ -602,9 +799,9 @@ namespace wolfSSL.CSharp
         [DllImport(wolfssl_dll, CallingConvention = CallingConvention.Cdecl)]
         private extern static int wolfSSL_CTX_SetMinDhKey_Sz(IntPtr ctx, short size);
         [DllImport(wolfssl_dll, CallingConvention = CallingConvention.Cdecl)]
-        private extern static int wolfSSL_SetTmpDH_file(IntPtr ssl, StringBuilder dhParam, int type);
+        private extern static int wolfSSL_SetTmpDH_file(IntPtr ssl, string dhParam, int type);
         [DllImport(wolfssl_dll, CallingConvention = CallingConvention.Cdecl)]
-        private extern static int wolfSSL_CTX_SetTmpDH_file(IntPtr ctx, StringBuilder dhParam, int type);
+        private extern static int wolfSSL_CTX_SetTmpDH_file(IntPtr ctx, string dhParam, int type);
 
 #endif
 
@@ -733,15 +930,37 @@ namespace wolfSSL.CSharp
             }
         }
 
+#if WindowsCE
+        /* implement a Directory.GetParent(dir) helper for CE only */
+        public static string GetParentDirectory(string path) {
+            if (string.IsNullOrEmpty(path))
+                return string.Empty;
+
+            string normalized = path.TrimEnd('\\');
+
+            int lastSeparator = normalized.LastIndexOf('\\');
+            if (lastSeparator > 0)
+                return normalized.Substring(0, lastSeparator);
+            else
+                return string.Empty; // No parent exists
+        }
+#endif
+
         /// <summary>
         /// Utility function used to access the certificates
         /// based on the platform.
         /// <returns>return the platform specific path to the certificate</returns>
         /// </summary>
-        public static string setPath(string file) {
+        public static string setPath(string file)
+        {
             PlatformID platform = Environment.OSVersion.Platform;
+            string cert_path = "./";
+            string current_dir = ".";
+            bool found_path = false;
 
-#if !WindowsCE
+#if WindowsCE
+            /* Skip this first check for CE, as Unix and MacOSX platforms are not defined  */
+#else
             if (platform == PlatformID.Unix ||
                 platform == PlatformID.MacOSX)
             {
@@ -755,10 +974,36 @@ namespace wolfSSL.CSharp
                 platform == PlatformID.Win32S ||
                 platform == PlatformID.WinCE)
             {
+                current_dir = Directory.GetCurrentDirectory();
+                while (!string.IsNullOrEmpty(current_dir) && !found_path)
+                {
+                    cert_path = Path.Combine(current_dir, "certs");
+                    if (Directory.Exists(cert_path))
+                    {
+                        Console.WriteLine("Found certs folder at: " + cert_path);
+                        found_path = true;
+                    }
+
+                    if (string.IsNullOrEmpty(current_dir))
+                    {
+                        current_dir = ".\\";
+                    }
+                    else
+                    {
+#if WindowsCE
+                        current_dir = GetParentDirectory(current_dir);
+#else
+                        current_dir = Directory.GetParent(current_dir).FullName;
+#endif
+                    }
+                } /* while */
+
                 Console.WriteLine("Windows - " + file);
-                return @"../../../../certs/" + file;
-            } else
+                return cert_path + "\\" + file;
+            }
+            else
             {
+                Console.WriteLine("Other environment: " + platform.ToString() + ", no cert file found.");
                 return "";
             }
         }
@@ -1570,11 +1815,11 @@ namespace wolfSSL.CSharp
                     return FAILURE;
                 }
 
-            #if WindowsCE
-                return wolfSSL_CTX_use_psk_identity_hint(local_ctx, wolfssl.AsciiToUnicode(hint));
-            #else
+#if WindowsCE
+                return wolfSSL_CTX_use_psk_identity_hint(local_ctx, wolfssl.WideCharToMultiByte(hint));
+#else
                 return wolfSSL_CTX_use_psk_identity_hint(local_ctx, hint);
-            #endif
+#endif
             }
             catch (Exception e)
             {
@@ -1852,20 +2097,16 @@ namespace wolfSSL.CSharp
         {
             try
             {
-            #if WindowsCE
                 string ciphers = new string(' ', 4096);
-            #else
-                StringBuilder ciphers = new StringBuilder(new String(' ', 4096));
-            #endif
                 int ret = wolfSSL_get_ciphers(ciphers, ciphers.Length);
                 if (ret != SUCCESS)
                     return null;
 
-        #if WindowsCE
-                return wolfssl.UnicodeToAscii(ciphers);
-        #else
+#if WindowsCE
+                return wolfssl.MultiByteToWideChar(ciphers);
+#else
                 return ciphers.ToString();
-        #endif
+#endif
             }
             catch (Exception e)
             {
@@ -1880,11 +2121,7 @@ namespace wolfSSL.CSharp
         /// <param name="list">list to fill with cipher suite names</param>
         /// <param name="sz">size of list available to fill</param>
         /// <returns>1 on success</returns>
-#if WindowsCE
         public static int get_ciphers(string list, int sz)
-#else
-        public static int get_ciphers(StringBuilder list, int sz)
-#endif
         {
             try
             {
@@ -2034,6 +2271,7 @@ namespace wolfSSL.CSharp
             catch (Exception e)
             {
                 log(ERROR_LOG, "wolfssl error " + e.ToString());
+                Console.WriteLine(e.Message);
                 return IntPtr.Zero;
             }
         }
@@ -2132,11 +2370,11 @@ namespace wolfSSL.CSharp
                     return FAILURE;
                 }
 
-            #if WindowsCE
-                return wolfSSL_CTX_set_cipher_list(local_ctx, wolfssl.AsciiToUnicode(list));
-            #else
+#if WindowsCE
+                return wolfSSL_CTX_set_cipher_list(local_ctx, wolfssl.WideCharToMultiByte(list));
+#else
                 return wolfSSL_CTX_set_cipher_list(local_ctx, list);
-            #endif
+#endif
             }
             catch (Exception e)
             {
@@ -2167,11 +2405,11 @@ namespace wolfSSL.CSharp
                     return FAILURE;
                 }
 
-            #if WindowsCE
-                return wolfSSL_set_cipher_list(sslCtx, wolfssl.AsciiToUnicode(list));
-            #else
+#if WindowsCE
+                return wolfSSL_set_cipher_list(sslCtx, wolfssl.WideCharToMultiByte(list));
+#else
                 return wolfSSL_set_cipher_list(sslCtx, list);
-            #endif
+#endif
             }
             catch (Exception e)
             {
@@ -2227,10 +2465,6 @@ namespace wolfSSL.CSharp
 
             try
             {
-                int err;
-                StringBuilder err_name;
-                StringBuilder ret;
-
                 IntPtr sslCtx = unwrap_ssl(ssl);
                 if (sslCtx == IntPtr.Zero)
                 {
@@ -2238,19 +2472,41 @@ namespace wolfSSL.CSharp
                     return null;
                 }
 
-                /* wolfSSL max error length is 80 */
-                ret = new StringBuilder(' ', 100);
-                err = wolfSSL_get_error(sslCtx, 0);
-                err_name = new StringBuilder(new String(' ', 80));
-                wolfSSL_ERR_error_string((uint)err, err_name);
-                ret.Append("Error " + err + " " + err_name.ToString());
-
-                return ret.ToString();
+                int err = wolfSSL_get_error(sslCtx, 0);
+                IntPtr err_ptr = wolfSSL_ERR_reason_error_string((uint)err);
+                string err_str = wolfssl.PtrToStringAnsi(err_ptr);
+                return "Error " + err + " " + err_str;
             }
             catch (Exception e)
             {
                 log(ERROR_LOG, "wolfssl get error, error " + e.ToString());
                 return null;
+            }
+        }
+
+
+        /// <summary>
+        /// This function gets the alert history.
+        /// </summary>
+        /// <param name="ssl">SSL struct</param>
+        /// <param name="h">a pointer to a WOLFSSL_ALERT_HISTORY structure that will hold the WOLFSSL struct’s alert_history member’s value.</param>
+        /// <returns>Integer result of wolfSSL_get_alert_history SSL_SUCCESS or FAILURE</returns>
+        public static int get_alert_history(IntPtr ssl, ref WOLFSSL_ALERT_HISTORY h) {
+            if (ssl == IntPtr.Zero)
+                return FAILURE;
+
+            try {
+                IntPtr local_ssl = unwrap_ssl(ssl);
+                if (local_ssl == IntPtr.Zero) {
+                    log(ERROR_LOG, "wolfssl get_error error");
+                    return FAILURE;
+                }
+
+                return wolfSSL_get_alert_history(local_ssl, ref h);
+            }
+            catch (Exception e) {
+                log(ERROR_LOG, "wolfssl get error, error " + e.ToString());
+                return FAILURE;
             }
         }
 
@@ -2273,11 +2529,11 @@ namespace wolfSSL.CSharp
                     return FAILURE;
                 }
 
-            #if WindowsCE
-                return wolfSSL_CTX_use_certificate_file(local_ctx, wolfssl.AsciiToUnicode(fileCert), type);
-            #else
+#if WindowsCE
+                return wolfSSL_CTX_use_certificate_file(local_ctx, wolfssl.WideCharToMultiByte(fileCert), type);
+#else
                 return wolfSSL_CTX_use_certificate_file(local_ctx, fileCert, type);
-            #endif
+#endif
             }
             catch (Exception e)
             {
@@ -2305,11 +2561,11 @@ namespace wolfSSL.CSharp
                     return FAILURE;
                 }
 
-            #if WindowsCE
-                return wolfSSL_CTX_load_verify_locations(local_ctx, wolfssl.AsciiToUnicode(fileCert), wolfssl.AsciiToUnicode(path));
-            #else
+#if WindowsCE
+                return wolfSSL_CTX_load_verify_locations(local_ctx, wolfssl.WideCharToMultiByte(fileCert), wolfssl.WideCharToMultiByte(path));
+#else
                 return wolfSSL_CTX_load_verify_locations(local_ctx, fileCert, path);
-            #endif
+#endif
             }
             catch (Exception e)
             {
@@ -2336,11 +2592,11 @@ namespace wolfSSL.CSharp
                     return FAILURE;
                 }
 
-            #if WindowsCE
-                return wolfSSL_CTX_use_PrivateKey_file(local_ctx, wolfssl.AsciiToUnicode(fileKey), type);
-            #else
+#if WindowsCE
+                return wolfSSL_CTX_use_PrivateKey_file(local_ctx, wolfssl.WideCharToMultiByte(fileKey), type);
+#else
                 return wolfSSL_CTX_use_PrivateKey_file(local_ctx, fileKey, type);
-            #endif
+#endif
             }
             catch (Exception e)
             {
@@ -2357,11 +2613,7 @@ namespace wolfSSL.CSharp
         /// <param name="dhparam">file name</param>
         /// <param name="file_type">type of file ie PEM</param>
         /// <returns>1 on success</returns>
-#if WindowsCE
         public static int SetTmpDH_file(IntPtr ssl, string dhparam, int file_type)
-#else
-        public static int SetTmpDH_file(IntPtr ssl, StringBuilder dhparam, int file_type)
-#endif
         {
             try
             {
@@ -2372,11 +2624,11 @@ namespace wolfSSL.CSharp
                     return FAILURE;
                 }
 
-            #if WindowsCE
-                return wolfSSL_SetTmpDH_file(sslCtx, wolfssl.AsciiToUnicode(dhparam), file_type);
-            #else
+#if WindowsCE
+                return wolfSSL_SetTmpDH_file(sslCtx, wolfssl.WideCharToMultiByte(dhparam), file_type);
+#else
                 return wolfSSL_SetTmpDH_file(sslCtx, dhparam, file_type);
-            #endif
+#endif
             }
             catch (Exception e)
             {
@@ -2392,11 +2644,7 @@ namespace wolfSSL.CSharp
         /// <param name="dhparam">file name</param>
         /// <param name="file_type">type of file ie PEM</param>
         /// <returns>1 on success</returns>
-#if WindowsCE
         public static int CTX_SetTmpDH_file(IntPtr ctx, string dhparam, int file_type)
-#else
-        public static int CTX_SetTmpDH_file(IntPtr ctx, StringBuilder dhparam, int file_type)
-#endif
         {
             try
             {
@@ -2407,11 +2655,11 @@ namespace wolfSSL.CSharp
                     return FAILURE;
                 }
 
-            #if WindowsCE
-                return wolfSSL_CTX_SetTmpDH_file(local_ctx, wolfssl.AsciiToUnicode(dhparam), file_type);
-            #else
+#if WindowsCE
+                return wolfSSL_CTX_SetTmpDH_file(local_ctx, wolfssl.WideCharToMultiByte(dhparam), file_type);
+#else
                 return wolfSSL_CTX_SetTmpDH_file(local_ctx, dhparam, file_type);
-            #endif
+#endif
             }
             catch (Exception e)
             {
@@ -2637,19 +2885,47 @@ namespace wolfSSL.CSharp
         }
 
         /// <summary>
-        /// Set the function to use for logging
+        /// Clean up old callbacks if previously assigned.
         /// </summary>
-        /// <param name="input">Function that conforms as to loggingCb</param>
+        public static void ClearLoggingCallbacks() {
+            /* Delegates are managed objects; nulling the reference allows GC to clean up. */
+#if WindowsCE
+            internal_log = null;
+            wolfSSL_SetLoggingCb((loggingCb)null); /* call wolfSSL callback cleanup, string param */
+#else
+            internal_log_ex = null;
+            internal_bridge_cb = null;
+            wolfSSL_SetLoggingCb((loggingCbEx)null); /* call wolfSSL callback cleanup */
+#endif
+        }
+
+        /* SetLogging() and log() implementations are different for CE vs non-CE: String msg vs StringBuilder msg */
+#if WindowsCE
+        /// <summary>
+        /// Set the function to use for logging on Windows CE
+        /// </summary>
+        /// <param name="input">Function that conforms as to loggingCb String msg</param>
         /// <returns>1 on success</returns>
         public static int SetLogging(loggingCb input)
         {
+            /* If SetLogging was previously called, clean it up and exit if there's no new cb function */
+            if (input == null) {
+                ClearLoggingCallbacks();
+                return SetLogging((loggingCb)null);
+            }
+
+            /* If SetLogging is called with a new logging function, clean up the old one first: */
+            if (internal_log != null) {
+                ClearLoggingCallbacks();
+            }
+
+            /* Set our new callback logging function */
             internal_log = input;
 
             wolfSSL_SetLoggingCb(input);
 
             return SUCCESS;
         }
-
 
         /// <summary>
         /// Log a message to set logging function
@@ -2659,14 +2935,104 @@ namespace wolfSSL.CSharp
         public static void log(int lvl, string msg)
         {
             /* if log is not set then print nothing */
-            if (internal_log == null)
+            if (internal_log == null) {
                 return;
-        #if WindowsCE
+            }
             internal_log(lvl, msg);
-        #else
-            StringBuilder msg_sb = new StringBuilder(msg);
-            internal_log(lvl, msg_sb);
-        #endif
         }
-    }
-}
+#else
+        /// <summary>
+        /// Set the function to use for logging
+        /// </summary>
+        /// <param name="input">Function that conforms as to loggingCb StringBuilder msg</param>
+        /// <returns>1 on success</returns>
+        public static int SetLogging(loggingCb input)
+        {
+            /* If SetLogging was previously called, clean it up and exit if there's no new cb function */
+            if (input == null) {
+                ClearLoggingCallbacks();
+                return SetLogging((loggingCbEx)null);
+            }
+
+            /* If SetLogging is called with a new logging function, clean up the old one first: */
+            if (internal_bridge_cb != null) {
+                ClearLoggingCallbacks();
+            }
+
+            /* Build a bridge that routes through internal_log_ex logic */
+            internal_bridge_cb = new loggingCbEx(delegate (int lvl, IntPtr msgPtr)
+            {
+                string msg;
+
+                if (msgPtr == IntPtr.Zero) {
+                    msg = "";
+                }
+                else {
+                    int len = 0;
+                    while (Marshal.ReadByte(msgPtr, len) != 0) {
+                        len++;
+                    }
+
+                    byte[] buffer = new byte[len];
+                    Marshal.Copy(msgPtr, buffer, 0, len);
+                    msg = Encoding.ASCII.GetString(buffer, 0, buffer.Length);
+                }
+
+                StringBuilder sb = new StringBuilder();
+                sb.Append(msg);
+
+                input(lvl, sb);
+            });
+
+            /* return the result of SetLogging(loggingCbEx input) */
+            return SetLogging(internal_bridge_cb);
+        }
+
+        /// <summary>
+        /// Set the function to use for logging
+        /// </summary>
+        /// <param name="input">Function that conforms as to loggingCb for preferred IntPtr msg</param>
+        /// <returns>1 on success</returns>
+        public static int SetLogging(loggingCbEx input) {
+            if (input == null) {
+                ClearLoggingCallbacks();
+                return wolfSSL_SetLoggingCb((loggingCbEx)null);
+            }
+
+            /* If SetLogging is called with a new logging function, clean up the old one first: */
+            if (internal_log_ex != null) {
+                ClearLoggingCallbacks();
+            }
+
+            internal_log_ex = input;
+
+            /* Return the result of the native call to wolfSSL */
+            return wolfSSL_SetLoggingCb(input);
+        }
+
+        /// <summary>
+        /// Log a message to set logging function
+        /// </summary>
+        /// <param name="lvl">Level of log message</param>
+        /// <param name="msg">Message to log</param>
+        public static void log(int lvl, string msg)
+        {
+            /* if log is not set then print nothing; has SetLogging been called? */
+            if (internal_log_ex == null) {
+                return;
+            }
+
+            IntPtr ptr = wolfssl.StringToAnsiPtr(msg);
+            try
+            {
+                internal_log_ex(lvl, ptr);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(ptr);
+            }
+        }
+#endif
+
+    } /* class wolfssl */
+} /* namespace wolfSSL.CSharp */

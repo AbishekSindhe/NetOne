@@ -15,11 +15,25 @@ namespace NETtime.WinCE
 {
     public static class WOLFSSLWrapper
     {
+        private static wolfssl.WOLFSSL_ALERT_HISTORY myHistory = new wolfssl.WOLFSSL_ALERT_HISTORY();
+
+        /// <summary>
+        /// Verification callback
+        /// </summary>
+        /// <param name="preverify">1=Verify Okay, 0=Failure</param>
+        /// <param name="x509_ctx">Certificate in WOLFSSL_X509_STORE_CTX format</param>
         private static int myVerify(int preverify, IntPtr x509_ctx)
         {
-            /* Use the provided verification */
+            int verify = preverify;
+            int error = wolfssl.X509_STORE_CTX_get_error(x509_ctx);
+            if (error == wolfcrypt.ASN_BEFORE_DATE_E)
+            {
+                Console.WriteLine("Overriding before date error");
+                verify = 1; /* override error */
+            }
+
             /* Can optionally override failures by returning non-zero value */
-            return preverify;
+            return verify;
         }
 
         private static void clean(IntPtr ssl, IntPtr ctx)
@@ -36,12 +50,61 @@ namespace NETtime.WinCE
         /// <param name="msg">message to log</param>
         public static void standard_log(int lvl, string msg)
         {
-            Console.WriteLine(wolfssl.UnicodeToAscii(msg));
+            /* try multi-byte and fall back to msg if invalid */
+            string logMsg = wolfssl.MultiByteToWideChar(msg);
+            if (logMsg.Length < msg.Length / 2)
+            {
+                /* not multi-byte. internal log() are already wide char */
+                logMsg = msg;
+            }
+            Console.WriteLine(logMsg);
+        }
+
+        private static void show_alert_history_code(wolfssl.WOLFSSL_ALERT h, string m)
+        {
+            /* VS initializes .code and .level to zero; wolfSSL sets to -1 until there's a valid value. */
+            if ((h.code > 0) || (h.level > 0))
+            {
+                Console.WriteLine(m + " code:  " + h.code.ToString());
+            }
+            if ((h.code > 0) || (h.level > 0))
+            {
+                Console.WriteLine(m + " level: " + h.level.ToString());
+            }
+        }
+
+        private static void show_alert_history(IntPtr ssl)
+        {
+            int ret = 0;
+            ret = wolfssl.get_alert_history(ssl, ref myHistory);
+            if (ret == wolfssl.SUCCESS)
+            {
+                show_alert_history_code(myHistory.last_tx, "myHistory last_tx");
+                show_alert_history_code(myHistory.last_rx, "myHistory last_rx");
+            }
+            else
+            {
+                Console.WriteLine("Failed: call to get_alert_history failed with error " + ret.ToString());
+            }
         }
 
         public static void ConnectToServer()
         {
             StringBuilder caCert = new StringBuilder(Utility.LocalPath + "\\Cert\\ca-cert.pem");
+
+            /* string conversion tests */
+            /* WinCE:       using Unicode 16-bit
+             * wolfSSL DLL: using multi-byte (8-bit) */
+            string caCert1 = Path.GetFullPath("\\Cert\\ca-cert.pem");
+            string uCaCert1 = wolfssl.WideCharToMultiByte(caCert1);
+            string bCaCert1 = wolfssl.MultiByteToWideChar(uCaCert1);
+            Console.WriteLine("Before: " + caCert1 + ", After: " + bCaCert1);
+            /* odd length test */
+            string caCert2 = Path.GetFullPath("\\Certs\\ca-cert.pem");
+            string uCaCert2 = wolfssl.WideCharToMultiByte(caCert2);
+            string bCaCert2 = wolfssl.MultiByteToWideChar(uCaCert2);
+            Console.WriteLine("Before: " + caCert2 + ", After: " + bCaCert2);
+
             IntPtr ssl = IntPtr.Zero;
             IntPtr ctx = IntPtr.Zero;
 
@@ -50,8 +113,8 @@ namespace NETtime.WinCE
             string host = "stratus-clock-n2a.cloud.paychex.com";
             int port = 443;
 
-            //Console.WriteLine("Enabling Debug");
-            //wolfssl.Debugging_ON();
+            Console.WriteLine("Enabling Debug");
+            wolfssl.Debugging_ON();
 
             // example of function used for setting logging
             Console.WriteLine("Setting Logging");
@@ -118,10 +181,12 @@ namespace NETtime.WinCE
             {
                 /* get and print out the error */
                 Console.WriteLine("TLS Connect failed: " + wolfssl.get_error(ssl));
+                show_alert_history(ssl);
                 tcp.Close();
                 clean(ssl, ctx);
                 return;
             }
+            Console.WriteLine("TLS Connected " + wolfssl.get_error(ssl));
             Console.WriteLine("TLS Connected: version is " + wolfssl.get_version(ssl));
             Console.WriteLine("TLS Cipher Suite is " + wolfssl.get_current_cipher(ssl));
 
